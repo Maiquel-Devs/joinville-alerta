@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Joinville Alerta | Risco de alagar por rua</title>
+
+  <!-- Suporte e Configurações de PWA -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#0f172a" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <link rel="apple-touch-icon" href="./icons/icon-192.png" />
+
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <header>
+    <h1>🌧️ Joinville Alerta</h1>
+    <p id="last-update">Carregando...</p>
+  </header>
+
+  <main>
+    <p id="aviso-estado" class="aviso" role="status" hidden></p>
+
+    <!-- Nível e texto decididos pelo back-end -->
+    <section class="ai-card" id="ai-card">
+      <div class="ai-header">
+        <span class="badge-risk" id="ai-risk-badge">...</span>
+      </div>
+      <h2 id="ai-title">Carregando...</h2>
+      <p id="ai-message"></p>
+    </section>
+
+    <section class="metrics-grid">
+      <div class="metric-card">
+        <span>Chuva acumulada (24h)</span>
+        <strong id="m-rain">—</strong>
+      </div>
+      <div class="metric-card">
+        <span id="m-tide-label">Maré (estimativa)</span>
+        <strong id="m-tide">—</strong>
+      </div>
+    </section>
+
+    <!-- Aviso geral (chuva/maré): faixa âmbar, não pinta ruas; o texto é montado em app.js a partir de atencao_geral -->
+    <p id="aviso-geral" class="aviso-geral" role="status" hidden></p>
+
+    <section class="acoes">
+      <h2 class="chamada">Verificar o risco da minha casa / localização</h2>
+      <button id="btn-location" class="location-btn" type="button">📍 Usar minha localização</button>
+      <label for="busca" class="so-leitor">Nome da sua rua</label>
+      <input id="busca" class="search-input" type="search" placeholder="🔍 Digite o nome da sua rua (ex: Urussanga)" autocomplete="off" />
+      <div id="resultado" class="resultado" role="status" hidden></div>
+    </section>
+
+    <p id="aviso-ruas" class="aviso" hidden>Não foi possível carregar a lista de ruas. Abra o app com conexão ao menos uma vez.</p>
+
+    <!-- Lista geral, secundária: SEM atributo open (sempre recolhida ao abrir) -->
+    <details class="lista-geral" id="lista-geral">
+      <summary>Ver todas as vias mapeadas por faixa</summary>
+      <ul id="lista" class="lista" aria-live="polite"></ul>
+    </details>
+    <p id="sem-resultado" class="resumo" hidden>Nenhuma rua ou área encontrada. Isso não significa que não haja risco de alagar: fora das áreas mapeadas também pode alagar.</p>
+  </main>
+
+  <footer>
+    <p><strong>Fora das áreas mapeadas pelo PDDU também pode alagar.</strong> A lista contempla os cenários de risco modelados pelo PDDU; falhas de drenagem e chuva local continuam possíveis.</p>
+    <p>Mostra <strong>risco de alagar</strong> estimado a partir de maré e chuva; não confirma alagamento na rua.</p>
+    <p>Em emergência, ligue <strong>199 (Defesa Civil)</strong>. Este app não substitui a Defesa Civil.</p>
+    <p class="muted">Modelagem de Risco: PDDU Joinville (2011). Ruas: © colaboradores do <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> (ODbL). Dados meteorológicos: Open-Meteo.</p>
+  </footer>
+
+  <script src="./pip.js"></script>
+  <script src="./idade.js"></script>
+  <script src="./ruas.js"></script>
+  <script src="./app.js"></script>
+
+  <!-- Registro do Service Worker PWA -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js')
+          .then((reg) => console.log('[PWA] Service Worker registrado com sucesso:', reg.scope))
+          .catch((err) => console.error('[PWA] Falha ao registrar Service Worker:', err));
+      });
+    }
+  </script>
+</body>
+</html>

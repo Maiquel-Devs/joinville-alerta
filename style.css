@@ -1,0 +1,242 @@
+/* style.css - Minimalista, leve, pensado para celular em emergência */
+:root {
+  --bg-main: #0f172a;
+  --card-bg: #1e293b;
+  --text-primary: #f8fafc;
+  --text-muted: #94a3b8;
+  --border-color: #334155;
+  --nivel-atencao: #eab308;
+  --nivel-alto: #ef4444;
+  --nivel-neutro: #475569; /* nenhuma faixa ativa: neutro, nunca verde */
+  --nivel-indisponivel: #64748b;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+body {
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  padding: 12px;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.4;
+}
+
+[hidden] { display: none !important; }
+a { color: #38bdf8; }
+.muted { color: var(--text-muted); font-size: 0.7rem; }
+
+header {
+  text-align: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border-color);
+  margin-bottom: 12px;
+}
+header h1 { font-size: 1.3rem; color: #38bdf8; }
+header p { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Avisos de estado (indisponível, dado antigo, sem conexão) */
+.aviso-geral {
+  background: #422006;
+  border: 1px solid #f59e0b;
+  border-left: 6px solid #f59e0b;
+  color: #fef3c7;
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 8px 0;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+.aviso-geral[hidden] { display: none; }
+.aviso {
+  background: #422006;
+  border: 1px solid #a16207;
+  color: #fde68a;
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 0.85rem;
+}
+
+/* Cartão do nível global: a cor vem do nível que o back-end devolveu */
+.ai-card {
+  background: var(--card-bg);
+  border: 2px solid var(--nivel-indisponivel);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.ai-card.nivel-normal { border-color: var(--nivel-neutro); }
+.ai-card.nivel-atencao { border-color: var(--nivel-atencao); }
+.ai-card.nivel-alto { border-color: var(--nivel-alto); }
+
+.ai-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.badge-risk {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: #fff;
+  background: var(--nivel-indisponivel);
+}
+.badge-risk.nivel-normal { background: var(--nivel-neutro); }
+.badge-risk.nivel-atencao { background: #ca8a04; }
+.badge-risk.nivel-alto { background: var(--nivel-alto); }
+
+.ai-header small { font-size: 0.75rem; opacity: 0.75; text-align: right; }
+@media (max-width: 480px) {
+  .ai-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .ai-header small { text-align: left; }
+}
+
+.ai-card h2 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+.ai-card p { font-size: 0.88rem; color: #e2e8f0; }
+
+.metrics-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.metric-card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  text-align: center;
+}
+.metric-card span { font-size: 0.7rem; color: var(--text-muted); display: block; text-transform: uppercase; }
+.metric-card strong { font-size: 1.2rem; color: #38bdf8; }
+
+/* Ações: GPS e busca */
+.acoes { margin-bottom: 12px; }
+.location-btn {
+  width: 100%;
+  padding: 14px;
+  margin-bottom: 8px;
+  background-color: var(--card-bg);
+  color: #38bdf8;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.location-btn:hover:not(:disabled) { background-color: #334155; border-color: #38bdf8; }
+.location-btn { border-color: #38bdf8; font-weight: 700; min-height: 48px; }
+.search-input { border: 2px solid #38bdf8; min-height: 48px; }
+.search-input:focus { outline: 2px solid #7dd3fc; outline-offset: 2px; }
+.location-btn:disabled { opacity: 0.7; cursor: wait; }
+.search-input {
+  width: 100%;
+  padding: 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-color);
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  font-size: 1rem;
+}
+.resultado {
+  margin-bottom: 8px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 10px;
+  font-size: 0.92rem;
+}
+.resultado ul { margin: 6px 0 6px 18px; }
+.resultado small { display: block; color: var(--text-muted); font-size: 0.75rem; }
+
+/* Lista viva: pior primeiro */
+.lista, .cartoes { list-style: none; }
+.familia { margin-bottom: 16px; }
+.familia > h3 { font-size: 1.05rem; color: var(--text-primary); }
+.resumo { color: var(--text-muted); font-size: 0.85rem; margin: 6px 0; }
+.cartao {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-left: 6px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.cartao h4 { font-size: 1rem; }
+.cartao .estado { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
+.cartao.ativa { border-left-color: var(--nivel-alto); background: #3b1d1d; border-color: #7f1d1d; }
+.cartao.ativa h4 { font-size: 1.1rem; }
+.cartao.ativa .estado { color: #fecaca; font-weight: 700; }
+.cartao.ativa.antigo { opacity: 0.65; }
+.cartao.indisponivel { border-left-color: var(--nivel-indisponivel); border-style: dashed; }
+.cartao.inativa { border-left-color: #475569; }
+.cartao summary { cursor: pointer; font-size: 0.88rem; padding: 6px 0; }
+.cartao .ruas { list-style: none; font-size: 0.88rem; columns: 1; margin-top: 4px; }
+.cartao .ruas li { padding: 3px 0; border-top: 1px solid var(--border-color); }
+.cartao .mais {
+  display: block;
+  width: 100%;
+  margin-top: 8px;
+  padding: 12px;
+  font-weight: 600;
+  text-align: center;
+  background: transparent;
+  color: #38bdf8;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+footer {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+footer p { margin-bottom: 6px; }
+footer strong { color: var(--text-primary); }
+
+/* Rua: nome à esquerda, marca só quando a faixa está ativa */
+.cartao .ruas li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; min-height: 44px; }
+.nome-rua { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; word-break: break-word; font-weight: 500; }
+.tag { flex: none; white-space: nowrap; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-color); color: var(--text-muted); }
+.tag.ativa { background: #7f1d1d; border-color: #fca5a5; color: #fee2e2; }
+
+/* Diagnóstico por endereço + entorno */
+.chamada { font-size: 1.05rem; margin-bottom: 8px; }
+.diagnostico { background: var(--card-bg); border: 1px solid var(--border-color); border-left: 6px solid var(--nivel-indisponivel); border-radius: 8px; padding: 16px; margin: 8px 0; }
+.diagnostico h3 { font-size: 1.05rem; margin-bottom: 8px; }
+.diagnostico p { font-size: 0.9rem; margin: 6px 0; }
+.diagnostico .situacao { font-weight: 700; }
+.diagnostico.via-ativa { border-left-color: var(--nivel-alto); }
+.diagnostico .situacao.ativa { color: #fca5a5; }
+.diagnostico .homonimo { padding: 8px 10px; border: 1px solid #a16207; border-radius: 6px; color: #fde68a; background: #422006; }
+.cenario { margin-top: 10px; }
+.cenario p { color: var(--text-muted); }
+.cenario p.cenario-ativo { color: #fca5a5; font-weight: 600; }
+.entorno { margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+.entorno h4 { font-size: 0.9rem; margin-bottom: 6px; }
+.entorno ul { list-style: none; font-size: 0.88rem; }
+.entorno li { padding: 6px 0; border-top: 1px solid var(--border-color); overflow-wrap: anywhere; }
+.entorno small, .diagnostico small { display: block; margin-top: 6px; color: var(--text-muted); font-size: 0.75rem; }
+.emergencia { margin-top: 12px; font-size: 0.85rem; }
+.lista-geral { margin: 12px 0; }
+.lista-geral > summary { cursor: pointer; padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px; }
+
+/* Texto só para leitor de tela */
+.so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
