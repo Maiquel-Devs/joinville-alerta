@@ -1,0 +1,792 @@
+{
+ "estacoes": {
+  "iateclube": {
+   "nome": "Iate Clube",
+   "periodo_comum": [
+    "2018-02-01",
+    "2026-09-08"
+   ],
+   "anos_com_janela_em_comum": 4.03,
+   "horas_com_dado_em_comum_1h": 39293,
+   "correlacao_1h_por_deslocamento_h": {
+    "-2": 0.202,
+    "-1": 0.212,
+    "0": 0.233,
+    "1": 0.219,
+    "2": 0.203
+   },
+   "chuva_total_mm": {
+    "estacao": 7912.0,
+    "open_meteo": 8217.0
+   },
+   "razao_total_om_sobre_estacao": 1.039,
+   "janela_24h": {
+    "n_horas": 35325,
+    "vies_medio_mm": 0.2,
+    "rmse_mm": 10.06,
+    "correlacao_pearson": 0.612,
+    "correlacao_spearman": 0.704
+   },
+   "quantis_24h_mm": {
+    "p50": {
+     "estacao": 0.0,
+     "open_meteo": 1.1,
+     "razao_om_sobre_estacao": null
+    },
+    "p90": {
+     "estacao": 14.5,
+     "open_meteo": 15.4,
+     "razao_om_sobre_estacao": 1.06
+    },
+    "p95": {
+     "estacao": 26.7,
+     "open_meteo": 23.2,
+     "razao_om_sobre_estacao": 0.87
+    },
+    "p99": {
+     "estacao": 64.1,
+     "open_meteo": 43.6,
+     "razao_om_sobre_estacao": 0.68
+    },
+    "p99.9": {
+     "estacao": 120.7,
+     "open_meteo": 73.2,
+     "razao_om_sobre_estacao": 0.61
+    }
+   },
+   "eventos_ano": {
+    "20": {
+     "estacao": 20.1,
+     "open_meteo": 23.82
+    },
+    "30": {
+     "estacao": 14.64,
+     "open_meteo": 12.9
+    },
+    "40": {
+     "estacao": 9.93,
+     "open_meteo": 7.94
+    },
+    "50": {
+     "estacao": 5.71,
+     "open_meteo": 3.23
+    },
+    "60": {
+     "estacao": 5.21,
+     "open_meteo": 2.48
+    },
+    "80": {
+     "estacao": 3.23,
+     "open_meteo": 0.5
+    },
+    "100": {
+     "estacao": 1.24,
+     "open_meteo": 0.0
+    }
+   },
+   "limiar_open_meteo_com_mesma_taxa_da_estacao_mm": {
+    "20": 22.0,
+    "30": 28.0,
+    "40": 36.0,
+    "50": 44.0,
+    "60": 45.0,
+    "80": 50.0,
+    "100": 69.0
+   },
+   "acerto_de_eventos_24h": {
+    "30": {
+     "eventos_estacao": 59,
+     "detectados_pela_om": 28,
+     "eventos_om": 52,
+     "eventos_om_sem_par_na_estacao": 24
+    },
+    "50": {
+     "eventos_estacao": 23,
+     "detectados_pela_om": 6,
+     "eventos_om": 13,
+     "eventos_om_sem_par_na_estacao": 7
+    },
+    "80": {
+     "eventos_estacao": 13,
+     "detectados_pela_om": 1,
+     "eventos_om": 2,
+     "eventos_om_sem_par_na_estacao": 1
+    }
+   },
+   "maximo_anual_24h_mm": {
+    "2019": {
+     "estacao": 95.7,
+     "open_meteo": 68.4,
+     "cobertura": 0.82
+    },
+    "2022": {
+     "estacao": 96.8,
+     "open_meteo": 94.0,
+     "cobertura": 0.58
+    },
+    "2025": {
+     "estacao": 143.5,
+     "open_meteo": 45.3,
+     "cobertura": 0.52
+    },
+    "2026": {
+     "estacao": 91.4,
+     "open_meteo": 64.0,
+     "cobertura": 0.72
+    }
+   },
+   "proposta_correcao": {
+    "fator_simples_total": 1.039,
+    "mapeamento_quantis_om_para_estacao_mm": {
+     "15.4": 14.5,
+     "23.2": 26.7,
+     "43.6": 64.1,
+     "73.2": 120.7
+    }
+   }
+  },
+  "flotflux": {
+   "nome": "Flotflux (Cachoeira Central)",
+   "periodo_comum": [
+    "2018-01-01",
+    "2026-09-08"
+   ],
+   "anos_com_janela_em_comum": 6.55,
+   "horas_com_dado_em_comum_1h": 60818,
+   "correlacao_1h_por_deslocamento_h": {
+    "-2": 0.234,
+    "-1": 0.252,
+    "0": 0.261,
+    "1": 0.28,
+    "2": 0.238
+   },
+   "chuva_total_mm": {
+    "estacao": 16196.0,
+    "open_meteo": 13051.0
+   },
+   "razao_total_om_sobre_estacao": 0.806,
+   "janela_24h": {
+    "n_horas": 57437,
+    "vies_medio_mm": -1.26,
+    "rmse_mm": 10.48,
+    "correlacao_pearson": 0.715,
+    "correlacao_spearman": 0.776
+   },
+   "quantis_24h_mm": {
+    "p50": {
+     "estacao": 0.0,
+     "open_meteo": 1.2,
+     "razao_om_sobre_estacao": null
+    },
+    "p90": {
+     "estacao": 20.3,
+     "open_meteo": 15.8,
+     "razao_om_sobre_estacao": 0.78
+    },
+    "p95": {
+     "estacao": 34.6,
+     "open_meteo": 23.2,
+     "razao_om_sobre_estacao": 0.67
+    },
+    "p99": {
+     "estacao": 75.2,
+     "open_meteo": 44.2,
+     "razao_om_sobre_estacao": 0.59
+    },
+    "p99.9": {
+     "estacao": 123.1,
+     "open_meteo": 76.7,
+     "razao_om_sobre_estacao": 0.62
+    }
+   },
+   "eventos_ano": {
+    "20": {
+     "estacao": 30.07,
+     "open_meteo": 24.88
+    },
+    "30": {
+     "estacao": 19.99,
+     "open_meteo": 12.51
+    },
+    "40": {
+     "estacao": 14.04,
+     "open_meteo": 7.48
+    },
+    "50": {
+     "estacao": 10.99,
+     "open_meteo": 3.51
+    },
+    "60": {
+     "estacao": 7.63,
+     "open_meteo": 2.14
+    },
+    "80": {
+     "estacao": 4.58,
+     "open_meteo": 0.61
+    },
+    "100": {
+     "estacao": 2.29,
+     "open_meteo": 0.0
+    }
+   },
+   "limiar_open_meteo_com_mesma_taxa_da_estacao_mm": {
+    "20": 16.0,
+    "30": 24.0,
+    "40": 28.0,
+    "50": 33.0,
+    "60": 39.0,
+    "80": 47.0,
+    "100": 57.0
+   },
+   "acerto_de_eventos_24h": {
+    "30": {
+     "eventos_estacao": 131,
+     "detectados_pela_om": 49,
+     "eventos_om": 82,
+     "eventos_om_sem_par_na_estacao": 33
+    },
+    "50": {
+     "eventos_estacao": 72,
+     "detectados_pela_om": 13,
+     "eventos_om": 23,
+     "eventos_om_sem_par_na_estacao": 10
+    },
+    "80": {
+     "eventos_estacao": 30,
+     "detectados_pela_om": 4,
+     "eventos_om": 4,
+     "eventos_om_sem_par_na_estacao": 0
+    }
+   },
+   "maximo_anual_24h_mm": {
+    "2018": {
+     "estacao": 116.1,
+     "open_meteo": 86.8,
+     "cobertura": 0.67
+    },
+    "2019": {
+     "estacao": 137.2,
+     "open_meteo": 68.4,
+     "cobertura": 0.89
+    },
+    "2020": {
+     "estacao": 114.5,
+     "open_meteo": 66.1,
+     "cobertura": 0.84
+    },
+    "2021": {
+     "estacao": 144.8,
+     "open_meteo": 48.1,
+     "cobertura": 0.65
+    },
+    "2022": {
+     "estacao": 172.0,
+     "open_meteo": 94.0,
+     "cobertura": 1.0
+    },
+    "2023": {
+     "estacao": 102.9,
+     "open_meteo": 77.4,
+     "cobertura": 1.0
+    },
+    "2025": {
+     "estacao": 82.8,
+     "open_meteo": 45.3,
+     "cobertura": 0.54
+    },
+    "2026": {
+     "estacao": 107.4,
+     "open_meteo": 64.0,
+     "cobertura": 0.7
+    }
+   },
+   "proposta_correcao": {
+    "fator_simples_total": 0.806,
+    "mapeamento_quantis_om_para_estacao_mm": {
+     "15.8": 20.3,
+     "23.2": 34.6,
+     "44.2": 75.2,
+     "76.7": 123.1
+    }
+   }
+  },
+  "aguasdejoi": {
+   "nome": "Águas de Joinville (Bucarein)",
+   "periodo_comum": [
+    "2018-01-01",
+    "2024-06-06"
+   ],
+   "anos_com_janela_em_comum": 1.95,
+   "horas_com_dado_em_comum_1h": 19724,
+   "correlacao_1h_por_deslocamento_h": {
+    "-2": 0.221,
+    "-1": 0.232,
+    "0": 0.259,
+    "1": 0.253,
+    "2": 0.232
+   },
+   "chuva_total_mm": {
+    "estacao": 2832.0,
+    "open_meteo": 3273.0
+   },
+   "razao_total_om_sobre_estacao": 1.156,
+   "janela_24h": {
+    "n_horas": 17136,
+    "vies_medio_mm": 0.57,
+    "rmse_mm": 7.61,
+    "correlacao_pearson": 0.596,
+    "correlacao_spearman": 0.631
+   },
+   "quantis_24h_mm": {
+    "p50": {
+     "estacao": 0.0,
+     "open_meteo": 0.6,
+     "razao_om_sobre_estacao": null
+    },
+    "p90": {
+     "estacao": 8.9,
+     "open_meteo": 11.5,
+     "razao_om_sobre_estacao": 1.29
+    },
+    "p95": {
+     "estacao": 20.4,
+     "open_meteo": 19.3,
+     "razao_om_sobre_estacao": 0.95
+    },
+    "p99": {
+     "estacao": 42.7,
+     "open_meteo": 36.4,
+     "razao_om_sobre_estacao": 0.85
+    },
+    "p99.9": {
+     "estacao": 80.9,
+     "open_meteo": 75.4,
+     "razao_om_sobre_estacao": 0.93
+    }
+   },
+   "eventos_ano": {
+    "20": {
+     "estacao": 15.35,
+     "open_meteo": 17.9
+    },
+    "30": {
+     "estacao": 9.21,
+     "open_meteo": 8.7
+    },
+    "40": {
+     "estacao": 5.12,
+     "open_meteo": 4.6
+    },
+    "50": {
+     "estacao": 3.07,
+     "open_meteo": 1.53
+    },
+    "60": {
+     "estacao": 3.07,
+     "open_meteo": 1.02
+    },
+    "80": {
+     "estacao": 1.02,
+     "open_meteo": 0.51
+    },
+    "100": {
+     "estacao": 0.0,
+     "open_meteo": 0.0
+    }
+   },
+   "limiar_open_meteo_com_mesma_taxa_da_estacao_mm": {
+    "20": 21.0,
+    "30": 28.0,
+    "40": 37.0,
+    "50": 43.0,
+    "60": 43.0,
+    "80": 53.0
+   },
+   "acerto_de_eventos_24h": {
+    "30": {
+     "eventos_estacao": 18,
+     "detectados_pela_om": 5,
+     "eventos_om": 17,
+     "eventos_om_sem_par_na_estacao": 12
+    },
+    "50": {
+     "eventos_estacao": 6,
+     "detectados_pela_om": 0,
+     "eventos_om": 3,
+     "eventos_om_sem_par_na_estacao": 3
+    },
+    "80": {
+     "eventos_estacao": 2,
+     "detectados_pela_om": 0,
+     "eventos_om": 1,
+     "eventos_om_sem_par_na_estacao": 1
+    }
+   },
+   "maximo_anual_24h_mm": {
+    "2021": {
+     "estacao": 80.3,
+     "open_meteo": 48.1,
+     "cobertura": 0.52
+    }
+   },
+   "proposta_correcao": {
+    "fator_simples_total": 1.156,
+    "mapeamento_quantis_om_para_estacao_mm": {
+     "11.5": 8.9,
+     "19.3": 20.4,
+     "36.4": 42.7,
+     "75.4": 80.9
+    }
+   }
+  }
+ },
+ "open_meteo_completo": {
+  "inicio": "2018-01-01",
+  "fim": "2026-09-08",
+  "anos": 8.68,
+  "limiares_mm": {
+   "20": {
+    "eventos_ano": 25.217,
+    "dias_ano": 51.586,
+    "horas_ano": 622.8,
+    "eventos_total": 219
+   },
+   "30": {
+    "eventos_ano": 13.012,
+    "dias_ano": 23.605,
+    "horas_ano": 256.2,
+    "eventos_total": 113
+   },
+   "40": {
+    "eventos_ano": 7.369,
+    "dias_ano": 12.321,
+    "horas_ano": 125.9,
+    "eventos_total": 64
+   },
+   "50": {
+    "eventos_ano": 3.57,
+    "dias_ano": 6.103,
+    "horas_ano": 58.5,
+    "eventos_total": 31
+   },
+   "60": {
+    "eventos_ano": 2.073,
+    "dias_ano": 3.685,
+    "horas_ano": 33.5,
+    "eventos_total": 18
+   },
+   "80": {
+    "eventos_ano": 0.691,
+    "dias_ano": 0.921,
+    "horas_ano": 10.7,
+    "eventos_total": 6
+   },
+   "100": {
+    "eventos_ano": 0.115,
+    "dias_ano": 0.23,
+    "horas_ano": 2.2,
+    "eventos_total": 1
+   }
+  },
+  "curva_eventos_ano": {
+   "10": 37.768,
+   "11": 37.538,
+   "12": 36.156,
+   "13": 35.12,
+   "14": 33.277,
+   "15": 32.011,
+   "16": 29.823,
+   "17": 28.787,
+   "18": 27.405,
+   "19": 26.599,
+   "20": 25.217,
+   "21": 23.835,
+   "22": 21.648,
+   "23": 20.842,
+   "24": 19.805,
+   "25": 18.078,
+   "26": 17.042,
+   "27": 16.005,
+   "28": 14.624,
+   "29": 13.818,
+   "30": 13.012,
+   "31": 12.551,
+   "32": 11.4,
+   "33": 10.824,
+   "34": 9.672,
+   "35": 9.327,
+   "36": 8.981,
+   "37": 8.521,
+   "38": 7.83,
+   "39": 7.715,
+   "40": 7.369,
+   "41": 7.254,
+   "42": 6.794,
+   "43": 6.103,
+   "44": 5.988,
+   "45": 5.412,
+   "46": 4.836,
+   "47": 4.376,
+   "48": 3.915,
+   "49": 3.8,
+   "50": 3.57,
+   "51": 3.224,
+   "52": 3.224,
+   "53": 2.879,
+   "54": 2.648,
+   "55": 2.533,
+   "56": 2.533,
+   "57": 2.303,
+   "58": 2.303,
+   "59": 2.073,
+   "60": 2.073,
+   "61": 2.073,
+   "62": 1.842,
+   "63": 1.842,
+   "64": 1.727,
+   "65": 1.612,
+   "66": 1.612,
+   "67": 1.382,
+   "68": 1.267,
+   "69": 1.151,
+   "70": 1.151,
+   "71": 1.151,
+   "72": 1.036,
+   "73": 1.036,
+   "74": 0.921,
+   "75": 0.921,
+   "76": 0.921,
+   "77": 0.806,
+   "78": 0.691,
+   "79": 0.691,
+   "80": 0.691,
+   "81": 0.691,
+   "82": 0.691,
+   "83": 0.691,
+   "84": 0.691,
+   "85": 0.691,
+   "86": 0.691,
+   "87": 0.576,
+   "88": 0.461,
+   "89": 0.345,
+   "90": 0.345,
+   "91": 0.345,
+   "92": 0.345,
+   "93": 0.345,
+   "94": 0.345,
+   "95": 0.23,
+   "96": 0.23,
+   "97": 0.23,
+   "98": 0.23,
+   "99": 0.115,
+   "100": 0.115,
+   "101": 0.115,
+   "102": 0.115,
+   "103": 0.115,
+   "104": 0.115,
+   "105": 0.115,
+   "106": 0.115,
+   "107": 0.115,
+   "108": 0.115,
+   "109": 0.115,
+   "110": 0.115,
+   "111": 0.115,
+   "112": 0.115,
+   "113": 0.115,
+   "114": 0.115,
+   "115": 0.115,
+   "116": 0.115,
+   "117": 0.115,
+   "118": 0.115,
+   "119": 0.115,
+   "120": 0.115,
+   "121": 0.115,
+   "122": 0.115,
+   "123": 0.115,
+   "124": 0.115,
+   "125": 0.115,
+   "126": 0.115,
+   "127": 0.115,
+   "128": 0.115,
+   "129": 0.115,
+   "130": 0.115,
+   "131": 0.115,
+   "132": 0.115,
+   "133": 0.115,
+   "134": 0.115,
+   "135": 0.115,
+   "136": 0.115,
+   "137": 0.115,
+   "138": 0.115,
+   "139": 0.115,
+   "140": 0.115,
+   "141": 0.115,
+   "142": 0.115,
+   "143": 0.0,
+   "144": 0.0,
+   "145": 0.0,
+   "146": 0.0,
+   "147": 0.0,
+   "148": 0.0,
+   "149": 0.0,
+   "150": 0.0,
+   "151": 0.0,
+   "152": 0.0,
+   "153": 0.0,
+   "154": 0.0,
+   "155": 0.0,
+   "156": 0.0,
+   "157": 0.0,
+   "158": 0.0,
+   "159": 0.0,
+   "160": 0.0,
+   "161": 0.0,
+   "162": 0.0,
+   "163": 0.0,
+   "164": 0.0,
+   "165": 0.0,
+   "166": 0.0,
+   "167": 0.0,
+   "168": 0.0,
+   "169": 0.0,
+   "170": 0.0,
+   "171": 0.0,
+   "172": 0.0,
+   "173": 0.0,
+   "174": 0.0,
+   "175": 0.0,
+   "176": 0.0,
+   "177": 0.0,
+   "178": 0.0,
+   "179": 0.0,
+   "180": 0.0,
+   "181": 0.0,
+   "182": 0.0,
+   "183": 0.0,
+   "184": 0.0,
+   "185": 0.0,
+   "186": 0.0,
+   "187": 0.0,
+   "188": 0.0,
+   "189": 0.0,
+   "190": 0.0,
+   "191": 0.0,
+   "192": 0.0,
+   "193": 0.0,
+   "194": 0.0,
+   "195": 0.0,
+   "196": 0.0,
+   "197": 0.0,
+   "198": 0.0,
+   "199": 0.0,
+   "200": 0.0,
+   "201": 0.0,
+   "202": 0.0,
+   "203": 0.0,
+   "204": 0.0,
+   "205": 0.0,
+   "206": 0.0,
+   "207": 0.0,
+   "208": 0.0,
+   "209": 0.0,
+   "210": 0.0,
+   "211": 0.0,
+   "212": 0.0,
+   "213": 0.0,
+   "214": 0.0,
+   "215": 0.0,
+   "216": 0.0,
+   "217": 0.0,
+   "218": 0.0,
+   "219": 0.0,
+   "220": 0.0,
+   "221": 0.0,
+   "222": 0.0,
+   "223": 0.0,
+   "224": 0.0,
+   "225": 0.0,
+   "226": 0.0,
+   "227": 0.0,
+   "228": 0.0,
+   "229": 0.0,
+   "230": 0.0,
+   "231": 0.0,
+   "232": 0.0,
+   "233": 0.0,
+   "234": 0.0,
+   "235": 0.0,
+   "236": 0.0,
+   "237": 0.0,
+   "238": 0.0,
+   "239": 0.0,
+   "240": 0.0,
+   "241": 0.0,
+   "242": 0.0,
+   "243": 0.0,
+   "244": 0.0,
+   "245": 0.0,
+   "246": 0.0,
+   "247": 0.0,
+   "248": 0.0,
+   "249": 0.0,
+   "250": 0.0
+  },
+  "maximo_anual_24h_mm": {
+   "2018": 86.8,
+   "2019": 68.4,
+   "2020": 66.1,
+   "2021": 58.7,
+   "2022": 94.0,
+   "2023": 77.4,
+   "2024": 142.3,
+   "2025": 98.0,
+   "2026": 64.0
+  },
+  "maximo_anual_usado": {
+   "2018": 86.8,
+   "2019": 68.4,
+   "2020": 66.1,
+   "2021": 58.7,
+   "2022": 94.0,
+   "2023": 77.4,
+   "2024": 142.3,
+   "2025": 98.0,
+   "2026": 64.0
+  },
+  "ponto_de_grade": {
+   "lat": -26.326889,
+   "lon": -48.857147,
+   "elevacao_m": 9.0
+  },
+  "gumbel": {
+   "2": {
+    "nivel_mm": 79.5,
+    "ic95_mm": [
+     67.7,
+     95.3
+    ]
+   },
+   "5": {
+    "nivel_mm": 97.8,
+    "ic95_mm": [
+     75.8,
+     123.7
+    ]
+   },
+   "10": {
+    "nivel_mm": 110.0,
+    "ic95_mm": [
+     81.2,
+     142.4
+    ]
+   },
+   "25": {
+    "nivel_mm": 125.4,
+    "ic95_mm": [
+     87.5,
+     166.9
+    ]
+   }
+  }
+ }
+}
