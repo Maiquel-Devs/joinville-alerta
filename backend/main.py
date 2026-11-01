@@ -25,7 +25,7 @@ async def lifespan(app: FastAPI):
     scheduler.shutdown()
     coleta_inicial.cancel()
 
-app = FastAPI(title="joinville-alerta-v2 API", lifespan=lifespan)
+app = FastAPI(title="joinville-alerta API", lifespan=lifespan)
 
 # CORS restrito à origem do front (só esquema + host, sem caminho). Várias origens: separar por vírgula.
 ALLOWED_ORIGIN = os.getenv("ALLOWED_ORIGIN", "https://maiquel-devs.github.io")

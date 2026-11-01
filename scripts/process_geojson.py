@@ -66,7 +66,7 @@ VIAS_IGNORADAS = (
     "construction|proposed|raceway|busway|elevator|service"
 )
 OVERPASS = ["https://overpass-api.de/api/interpreter", "https://overpass.kumi.systems/api/interpreter"]
-USER_AGENT = "joinville-alerta-v2/pipeline-offline (projeto academico Univille)"
+USER_AGENT = "joinville-alerta/pipeline-offline (projeto academico Univille)"
 
 # Decisões em aberto (2.4 e 2.5): valores iniciais, ajuste ao ver o resultado.
 TAMANHO_MIN_PEDACO_M = 10.0

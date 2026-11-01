@@ -1,6 +1,6 @@
 {
   "id": "./",
-  "name": "Joinville Alerta v2",
+  "name": "Joinville Alerta",
   "short_name": "JoinvilleAlerta",
   "description": "Risco de alagar por rua em Joinville/SC, a partir de maré, chuva e das áreas mapeadas pelo PDDU",
   "start_url": "./index.html",
