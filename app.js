@@ -1,7 +1,7 @@
 // app.js - Lista viva "pior primeiro". Só ordena e mostra o que o back-end decidiu:
 // o estado de cada faixa e o nível vêm de /api/v1/status-geral. Nenhuma regra de risco aqui.
 (() => {
-  const API = 'https://joinville-alerta-v2.onrender.com/api/v1/status-geral';
+  const API = 'http://127.0.0.1:8000/api/v1/status-geral';
   const CHAVE_SALVO = 'ja2_ultimo_estado';
   const TIMEOUT_API_MS = 45000; // por tentativa; o Render gratuito hiberna e a primeira resposta é lenta
   const TENTATIVAS_API = 2; // a 2ª pega o servidor já acordado

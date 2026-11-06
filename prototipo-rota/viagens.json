@@ -1,0 +1,12 @@
+[
+  {
+    "nome": "Centro_para_Boa_Vista",
+    "origem": {"nome": "Praça Nereu Ramos", "lat": -26.3027975, "lon": -48.8457656},
+    "destino": {"nome": "Bairro Boa Vista", "lat": -26.2998404, "lon": -48.8229801}
+  },
+  {
+    "nome": "Rodoviaria_para_Shopping_Mueller",
+    "origem": {"nome": "Rodoviária Harold Nielson", "lat": -26.31497, "lon": -48.8574100},
+    "destino": {"nome": "Shopping Mueller", "lat": -26.3036366, "lon": -48.8489780}
+  }
+]
