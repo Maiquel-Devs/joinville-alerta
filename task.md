@@ -90,6 +90,21 @@ Objetivo: trocar "30 mm" e "1,6 / 2,53 m" por números com frequência conhecida
 
 ---
 
+## Etapa 10 — Mapa de trajetos fixos (decidido 06/11/2026)
+
+Substitui a decisão "sem mapa na interface" (12/10/2026). O mapa mostra a **exposição** de trechos de trajetos pré-definidos, nunca sugere caminho, desvio ou rota. Trecho fora das áreas mapeadas é "não avaliado" e nunca conta como zero. O back-end classifica; o front só desenha. Sem chave de API, serviço pago ou LLM. Branch: `feature/mapa-trajetos`, commits por fase, sem push.
+
+- [ ] 10.1 **Documentação.** Decisão registrada em `CLAUDE.md` (Decisões tomadas e Regra de UX) e esta etapa em `task.md`. *Pronto quando:* o diff dos dois arquivos foi revisado pelo autor.
+- [ ] 10.2 **Gerador de trajetos.** `scripts/gerar_trajetos.py` (lógica trazida de `prototipo-rota/`): lê `data/ruas_risco.geojson` e o grafo osmnx local (`cache/`, fora do git), usa o caminho mais curto por distância (sem critério de risco) e gera `data/trajetos/indice.json` (id, nome, origem e destino com lat/lon e nome do ponto) e `data/trajetos/<id>.geojson` (um `LineString` por trecho, com `faixas` e comprimento em metros). Trajetos iniciais: `centro_boa_vista` e `rodoviaria_mueller`. *Pronto quando:* cada GeoJSON tem até 100 KB e no máximo 5 casas decimais.
+- [ ] 10.3 **Classificação no back-end.** `backend/trajetos.py` com `classificar_trecho(faixas_do_trecho, faixas_ativas)` pura, devolvendo `faixa_ativa`, `area_sem_faixa_ativa` ou `nao_avaliado` (trecho sem faixas); testes de tabela em `backend/tests/test_trajetos.py`, inclusive trecho com mais de uma faixa. *Pronto quando:* `cd backend && python -m pytest tests -q` passa, com os testes antigos.
+- [ ] 10.4 **Endpoints.** `GET /api/v1/trajetos` (índice) e `GET /api/v1/trajetos/{id}` (classe de cada trecho com as `faixas_ativas` do cache atual, totais em km por classe e `gerado_em`). Sem cache válido, `status: "indisponivel"`. *Pronto quando:* testes do endpoint cobrem cache válido, cache vazio e id inexistente.
+- [ ] 10.5 **Front.** Botão "Ver mapa de trajetos" e painel recolhido abaixo da lista geral; Leaflet 1.9.4 (unpkg, versão fixa, SRI) com fundo CARTO e atribuição "© OpenStreetMap contributors © CARTO"; cores: vermelho (faixa ativa), amarelo (área sem faixa ativa), cinza tracejado (não avaliado); legenda com as três frases fixas; km por classe e "Métrica de exposição do PDDU. Não é recomendação de rota."; dado vencido (> 120 min, `idade.js`) ou sem internet mostra "Mapa indisponível agora" e não desenha nada; o mapa não entra no cache do service worker e a `VERSAO` do `sw.js` sobe. *Pronto quando:* o front não contém regra de classificação e abre o mapa nos dois trajetos.
+- [ ] 10.6 **Verificação.** `pytest`, `node --test "teste/*.test.js"` e `python scripts/validar_dados.py` passam; `validar_dados.py` confere que os km das classes somam o total (tolerância de 1%) e que cada trajeto tem até 100 KB; busca por "segur" no repositório só acha a frase "não significa seguro" da legenda. *Pronto quando:* os três comandos passam e a busca confere.
+
+**Pronto quando:** o cidadão abre o painel, escolhe um dos trajetos fixos e vê a exposição por trecho com a legenda e o aviso; sem dado válido, vê "Mapa indisponível agora".
+
+---
+
 ## Trilha Doc 2 — Maré do Iate Clube (alimenta a Etapa 6)
 
 - [ ] D2.0 ⚖️ Baixar o zip do Zenodo (`joinville_meteo-data-2026-07-29.zip`, 169,5 MB, md5 `b918fc969e6ddc61b0549bd2ef56dba8`) fora do git.

@@ -41,7 +41,7 @@ Causas, em ordem de peso:
 
 ## Regra de UX (inviolável)
 
-O uso principal é o **diagnóstico por endereço**: o cidadão informa a rua (ou usa o GPS) e recebe, em menos de 2 s, a situação dela, as ruas mapeadas ao redor (~300 m) e orientação preventiva. Sem mapa na interface (decisão de 12/10/2026).
+O uso principal é o **diagnóstico por endereço**: o cidadão informa a rua (ou usa o GPS) e recebe, em menos de 2 s, a situação dela, as ruas mapeadas ao redor (~300 m) e orientação preventiva. O mapa fica restrito a trajetos fixos pré-definidos, num painel recolhido (ver "Mapa de trajetos fixos no app (06/11/2026)" em "Decisões tomadas").
 
 Ordem da tela: cabeçalho e avisos → cartão do nível do município e indicadores de chuva e maré → **aviso de atenção geral, se houver** → consulta individual (botão GPS, campo `#busca`, cartão `#resultado`) → lista geral recolhida → rodapé.
 
@@ -182,6 +182,7 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | **Alvos de frequência** | Faixa de rua ≈ 1/TR eventos por ano (TR 5 → 0,2; TR 10 → 0,1; TR 25 → 0,04); aviso geral entre 3 e 10 vezes por ano. Ajustáveis depois de ver a tabela da Etapa 6 | 29/10/2026 |
 | **Itaum** | Tratar como maré (padrão); conferir na cartilha. **Aplicado em 01/11/2026 (7.2):** `pluvial_itaum` saiu do pipeline; os trechos ficam em `mare_1_6`/`mare_2_5`. Evidência medida: 100,0% da área de Itaum (3,97 km²) está dentro das manchas de maré; cota mediana dos trechos 2,0 m, igual à da maré (Vila Nova: 8 m). Cartilha **não conferida** (sem acesso a ela nesta sessão); reverter só se disser que é chuva | 29/10/2026; aplicado 01/11/2026 |
 | **Render acordado** | Usar ping gratuito a cada ~10 min (tarefa 9.3) e documentar o comportamento sem ele | 29/10/2026 |
+| **Mapa de trajetos fixos no app** | Mapa de trajetos fixos no app (06/11/2026): substitui 'sem mapa na interface' (12/10/2026). Trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. | 06/11/2026 |
 | Fonte da maré, referencial vertical, significado de 1,6 m, limiar pluvial | _a preencher (0.7); a Etapa 6 fornece os números_ | |
 
 ## Dados de terceiros (joinville_meteo)
