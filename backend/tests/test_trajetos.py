@@ -137,3 +137,39 @@ def test_arquivos_reais_batem_com_o_indice():
         for f in json.loads(arq.read_text(encoding="utf-8"))["features"]:
             assert set(f["properties"]) == {"faixas", "m"} and f["geometry"]["type"] == "LineString"
             assert set(f["properties"]["faixas"]) <= set(FAIXAS)
+
+
+# --- diretório de dados --------------------------------------------------------------
+
+RAIZ = Path(__file__).resolve().parents[2]
+IDS = ["centro_boa_vista", "rodoviaria_mueller"]
+
+
+def test_diretorio_padrao_tem_indice_e_os_dois_trajetos():
+    assert trajetos.DIR_PADRAO == RAIZ / "data" / "trajetos"
+    assert (trajetos.DIR_PADRAO / "indice.json").is_file()
+    for id_ in IDS:
+        assert (trajetos.DIR_PADRAO / f"{id_}.geojson").is_file()
+
+
+@pytest.mark.parametrize("cwd", [RAIZ, RAIZ / "backend", RAIZ / "backend" / "tests"])
+def test_leitura_nao_depende_do_diretorio_de_trabalho(cwd):
+    import os
+    import subprocess
+
+    codigo = ("import sys; sys.path.insert(0, %r); import trajetos as t; "
+              "print(t.DIR_TRAJETOS == t.DIR_PADRAO, [x['id'] for x in t.indice()], "
+              "len(t._geojson('centro_boa_vista')['features']) > 0)" % str(RAIZ / "backend"))
+    env = {k: v for k, v in os.environ.items() if k != "TRAJETOS_DIR"}
+    saida = subprocess.run([sys.executable, "-c", codigo], cwd=cwd, env=env, capture_output=True, text=True, check=True)
+    assert saida.stdout.strip() == f"True {IDS} True"
+
+
+def test_variavel_de_ambiente_sobrescreve_o_diretorio(tmp_path):
+    import os
+    import subprocess
+
+    codigo = "import sys; sys.path.insert(0, %r); import trajetos as t; print(t.DIR_TRAJETOS)" % str(RAIZ / "backend")
+    env = {**os.environ, "TRAJETOS_DIR": str(tmp_path)}
+    saida = subprocess.run([sys.executable, "-c", codigo], env=env, capture_output=True, text=True, check=True)
+    assert Path(saida.stdout.strip()) == tmp_path

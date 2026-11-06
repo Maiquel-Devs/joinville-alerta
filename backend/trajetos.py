@@ -14,7 +14,10 @@ AREA_SEM_FAIXA_ATIVA = "area_sem_faixa_ativa"
 NAO_AVALIADO = "nao_avaliado"
 CLASSES = (FAIXA_ATIVA, AREA_SEM_FAIXA_ATIVA, NAO_AVALIADO)
 
-DIR_TRAJETOS = Path(os.getenv("TRAJETOS_DIR") or Path(__file__).resolve().parent.parent / "data" / "trajetos")
+# Calculado a partir deste arquivo (nunca do diretório de trabalho): <repo>/data/trajetos.
+# TRAJETOS_DIR é uma sobrescrita opcional (ex.: se o deploy não levar a pasta data/ junto).
+DIR_PADRAO = Path(__file__).resolve().parent.parent / "data" / "trajetos"
+DIR_TRAJETOS = Path(os.getenv("TRAJETOS_DIR") or DIR_PADRAO)
 
 
 def classificar_trecho(faixas_do_trecho, faixas_ativas) -> str:
