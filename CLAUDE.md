@@ -170,7 +170,7 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | Uso do conjunto joinville_meteo | CC BY 4.0 com atribuição, segundo o autor; termos da SEPROT a confirmar por e-mail | 23/10/2026 |
 | Trecho em mais de uma faixa | v2: pior faixa ativa. **v3: faixa de menor TR que contém o trecho** | 12/10/2026; v3: decidido 29/10/2026 |
 | Agrupamento da lista | Por faixa/área, sem bairro | 12/10/2026 |
-| Mapa Leaflet | Fora da interface e do cache; a página de auditoria `teste/camadas.html` existiu no repositório antigo e não foi migrada | 12/10/2026 |
+| Mapa Leaflet | Mapa Leaflet: substituída em 06/11/2026 pela decisão de mapa de trajetos fixos (ver linha abaixo). Sem destino livre. | 06/11/2026 |
 | Interface principal | Diagnóstico por endereço + entorno ~300 m; lista geral recolhida | 23/10/2026 |
 | Rótulos das faixas de maré | "Maré — Bacia do Cachoeira / Cotas Intermediárias (1,6m)" e "Maré — Calha Baixa do Cachoeira e Estuário (2,5m)" (termos a conferir na cartilha) | 16/10/2026 |
 | Só a faixa ativa marca a rua; sem verde nem amarelo por proximidade | Mantido | 16/10/2026 |
