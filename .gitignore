@@ -25,3 +25,6 @@ joinville_meteo_dados/
 # Altimetria e modelo de terreno brutos (SIMGeo/Prefeitura): só no computador do autor
 shp_altimetria/
 shp_modeloterr/
+
+# Grafo de ruas do osmnx (scripts/gerar_trajetos.py): baixado uma vez, fora do git
+cache/

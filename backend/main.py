@@ -2,11 +2,12 @@
 import asyncio
 import os
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
+import trajetos
 from cache_store import status_geral
 from config import CICLO_MIN
 from scheduler import update_telemetry_job
@@ -40,3 +41,17 @@ app.add_middleware(
 async def get_status_geral():
     # Retorna o resultado direto da RAM (< 5ms)
     return status_geral()
+
+
+@app.get("/api/v1/trajetos")
+async def get_trajetos():
+    # Lista do índice: trajetos fixos, sem destino livre.
+    return trajetos.indice()
+
+
+@app.get("/api/v1/trajetos/{id_}")
+async def get_trajeto(id_: str):
+    trajeto = trajetos.trajeto_por_id(id_)
+    if trajeto is None:
+        raise HTTPException(status_code=404, detail="Trajeto não encontrado")
+    return trajetos.montar_trajeto(trajeto, status_geral())
