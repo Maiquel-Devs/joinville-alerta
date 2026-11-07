@@ -184,7 +184,10 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | **Render acordado** | Usar ping gratuito a cada ~10 min (tarefa 9.3) e documentar o comportamento sem ele | 29/10/2026 |
 | **Mapa de trajetos fixos no app** | Mapa de trajetos fixos no app (06/11/2026): substitui 'sem mapa na interface' (12/10/2026). Trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. | 06/11/2026 |
 | **Trajetos fixos: faixa indisponível** | Trajetos fixos: se qualquer faixa estiver indisponível ou o cache estiver vazio, o back-end devolve 'indisponivel' e não classifica trechos. 'Nenhuma faixa ativa' só vale com todas as faixas com dado. | 06/11/2026 |
-| **Busca por rua no mapa** | Busca por rua no mapa: a rua digitada só é destacada se fizer parte de um trajeto fixo. Ruas fora dos trajetos não aparecem e não geram rota. | 07/11/2026 |
+| **Busca por rua no mapa** | _Substituída em 07/11/2026 pela linha "Trecho entre duas ruas no mapa" (abaixo)._ Busca por rua no mapa: a rua digitada só é destacada se fizer parte de um trajeto fixo. Ruas fora dos trajetos não aparecem e não geram rota. | 07/11/2026 |
+| **Trecho entre duas ruas no mapa** | Mapa de trajetos: o usuário informa a rua de início e a de destino dentro de um trajeto fixo. O app destaca o pedaço do trajeto entre elas, na ordem do trajeto. Não calcula rota nem aceita destino livre. | 07/11/2026 |
+| **VERSAO do sw.js** | Toda mudança em arquivos do front sobe a VERSAO do sw.js, para o navegador baixar a versão nova. | 07/11/2026 |
+| **Fundo do mapa** | Fundo do mapa: OpenFreeMap (sem chave, gratuito, atribuição obrigatória). Substitui o CARTO, que passou a exigir chave em 07/11/2026. | 07/11/2026 |
 | Fonte da maré, referencial vertical, significado de 1,6 m, limiar pluvial | _a preencher (0.7); a Etapa 6 fornece os números_ | |
 
 ## Dados de terceiros (joinville_meteo)

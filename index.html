@@ -73,6 +73,12 @@
         <option value="centro_boa_vista">Centro → Boa Vista</option>
         <option value="rodoviaria_padre_antonio_vieira">Rodoviária → Rua Padre Antônio Vieira</option>
       </select>
+      <div class="mapa-campos">
+        <label for="mapa-rua-inicio">Rua de início</label>
+        <input id="mapa-rua-inicio" class="mapa-campo" type="search" autocomplete="off" placeholder="ex: Príncipe" />
+        <label for="mapa-rua-destino">Rua de destino</label>
+        <input id="mapa-rua-destino" class="mapa-campo" type="search" autocomplete="off" placeholder="ex: Horto Florestal" />
+      </div>
       <p id="mapa-rua-msg" class="mapa-rua-msg" aria-live="polite"></p>
       <div id="mapa-aviso" class="aviso" role="status" hidden>Mapa indisponível agora</div>
       <div id="mapa-trajeto" class="mapa-trajeto" hidden></div>

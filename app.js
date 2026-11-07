@@ -503,7 +503,6 @@
   $('btn-location').addEventListener('click', usarGps);
   $('busca').addEventListener('input', (e) => {
     busca = e.target.value;
-    if (MAPA.foiAberto()) MAPA.destacarRua(busca); // só destaca ruas do trajeto já desenhado
     renderLista();
     mostrarDiagnostico(busca);
   });
