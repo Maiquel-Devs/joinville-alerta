@@ -170,7 +170,7 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | Uso do conjunto joinville_meteo | CC BY 4.0 com atribuição, segundo o autor; termos da SEPROT a confirmar por e-mail | 23/10/2026 |
 | Trecho em mais de uma faixa | v2: pior faixa ativa. **v3: faixa de menor TR que contém o trecho** | 12/10/2026; v3: decidido 29/10/2026 |
 | Agrupamento da lista | Por faixa/área, sem bairro | 12/10/2026 |
-| Mapa Leaflet | Mapa Leaflet: substituída em 06/11/2026 pela decisão de mapa de trajetos fixos (ver linha abaixo). Sem destino livre. | 06/11/2026 |
+| Mapa Leaflet | Mapa Leaflet: substituída em 06/11/2026 pela decisão 'Mapa de trajetos fixos no app' (linha abaixo). Sem destino livre. | 06/11/2026 |
 | Interface principal | Diagnóstico por endereço + entorno ~300 m; lista geral recolhida | 23/10/2026 |
 | Rótulos das faixas de maré | "Maré — Bacia do Cachoeira / Cotas Intermediárias (1,6m)" e "Maré — Calha Baixa do Cachoeira e Estuário (2,5m)" (termos a conferir na cartilha) | 16/10/2026 |
 | Só a faixa ativa marca a rua; sem verde nem amarelo por proximidade | Mantido | 16/10/2026 |
@@ -183,7 +183,8 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | **Itaum** | Tratar como maré (padrão); conferir na cartilha. **Aplicado em 01/11/2026 (7.2):** `pluvial_itaum` saiu do pipeline; os trechos ficam em `mare_1_6`/`mare_2_5`. Evidência medida: 100,0% da área de Itaum (3,97 km²) está dentro das manchas de maré; cota mediana dos trechos 2,0 m, igual à da maré (Vila Nova: 8 m). Cartilha **não conferida** (sem acesso a ela nesta sessão); reverter só se disser que é chuva | 29/10/2026; aplicado 01/11/2026 |
 | **Render acordado** | Usar ping gratuito a cada ~10 min (tarefa 9.3) e documentar o comportamento sem ele | 29/10/2026 |
 | **Mapa de trajetos fixos no app** | Mapa de trajetos fixos no app (06/11/2026): substitui 'sem mapa na interface' (12/10/2026). Trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. | 06/11/2026 |
-| Fonte da maré, referencial vertical, significado de 1,6 m, limiar pluvial | _a preencher (0.7); a Etapa 6 fornece os números_ | |
+|| **Trajetos fixos: faixa indisponível** | Trajetos fixos: se qualquer faixa estiver indisponível ou o cache estiver vazio, o back-end devolve 'indisponivel' e não classifica trechos. 'Nenhuma faixa ativa' só vale com todas as faixas com dado. | 06/11/2026 |
+ Fonte da maré, referencial vertical, significado de 1,6 m, limiar pluvial | _a preencher (0.7); a Etapa 6 fornece os números_ | |
 
 ## Dados de terceiros (joinville_meteo)
 

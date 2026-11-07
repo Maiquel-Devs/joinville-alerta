@@ -142,7 +142,7 @@ def test_arquivos_reais_batem_com_o_indice():
 # --- diretório de dados --------------------------------------------------------------
 
 RAIZ = Path(__file__).resolve().parents[2]
-IDS = ["centro_boa_vista", "rodoviaria_mueller"]
+IDS = ["centro_boa_vista", "rodoviaria_padre_antonio_vieira"]
 
 
 def test_diretorio_padrao_tem_indice_e_os_dois_trajetos():

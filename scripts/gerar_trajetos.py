@@ -43,9 +43,10 @@ TRAJETOS = [
     {"id": "centro_boa_vista", "nome": "Centro → Boa Vista",
      "origem": {"nome": "Praça Nereu Ramos", "lat": -26.3027975, "lon": -48.8457656},
      "destino": {"nome": "Bairro Boa Vista", "lat": -26.2998404, "lon": -48.8229801}},
-    {"id": "rodoviaria_mueller", "nome": "Rodoviária → Shopping Mueller",
+    {"id": "rodoviaria_padre_antonio_vieira", "nome": "Rodoviária → Rua Padre Antônio Vieira",
      "origem": {"nome": "Rodoviária Harold Nielson", "lat": -26.31497, "lon": -48.85741},
-     "destino": {"nome": "Shopping Mueller", "lat": -26.3036366, "lon": -48.848978}},
+     "destino": {"nome": "Rua Padre Antônio Vieira (ponto médio do primeiro trecho, faixa mare_1_6)",
+                 "lat": -26.283425, "lon": -48.84491}},
 ]
 
 _UTM = Transformer.from_crs(4326, 31982, always_xy=True).transform
