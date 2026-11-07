@@ -64,6 +64,30 @@
       <ul id="lista" class="lista" aria-live="polite"></ul>
     </details>
     <p id="sem-resultado" class="resumo" hidden>Nenhuma rua ou área encontrada. Isso não significa que não haja risco de alagar: fora das áreas mapeadas também pode alagar.</p>
+
+    <!-- Mapa de trajetos fixos: recolhido; Leaflet só é carregado ao abrir (mapa.js). O back-end classifica, aqui só se desenha. -->
+    <details class="painel-mapa" id="painel-mapa">
+      <summary>Ver mapa de trajetos</summary>
+      <label for="mapa-seletor" class="so-leitor">Trajeto</label>
+      <select id="mapa-seletor" class="mapa-seletor">
+        <option value="centro_boa_vista">Centro → Boa Vista</option>
+        <option value="rodoviaria_padre_antonio_vieira">Rodoviária → Rua Padre Antônio Vieira</option>
+      </select>
+      <div id="mapa-aviso" class="aviso" role="status" hidden>Mapa indisponível agora</div>
+      <div id="mapa-trajeto" class="mapa-trajeto" hidden></div>
+      <ul class="mapa-legenda">
+        <li><span class="amostra faixa-ativa"></span>Faixa ativa no cenário</li>
+        <li><span class="amostra area-sem-faixa"></span>Área mapeada pelo PDDU, sem faixa ativa</li>
+        <li><span class="amostra nao-avaliado"></span>Fora das áreas mapeadas pelo PDDU: não avaliado (não significa ausência de risco)</li>
+      </ul>
+      <dl id="mapa-totais" class="mapa-totais" hidden>
+        <div><dt>Faixa ativa</dt><dd id="mapa-km-ativa">—</dd></div>
+        <div><dt>Área mapeada, sem faixa ativa</dt><dd id="mapa-km-area">—</dd></div>
+        <div><dt>Não avaliado</dt><dd id="mapa-km-nao">—</dd></div>
+        <div><dt>Total</dt><dd id="mapa-km-total">—</dd></div>
+      </dl>
+      <p class="resumo">Métrica de exposição do PDDU. Não é recomendação de rota.</p>
+    </details>
   </main>
 
   <footer>
@@ -75,6 +99,7 @@
 
   <script src="./pip.js"></script>
   <script src="./idade.js"></script>
+  <script src="./mapa.js"></script>
   <script src="./ruas.js"></script>
   <script src="./app.js"></script>
 

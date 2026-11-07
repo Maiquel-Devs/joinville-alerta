@@ -238,5 +238,21 @@ footer strong { color: var(--text-primary); }
 .lista-geral { margin: 12px 0; }
 .lista-geral > summary { cursor: pointer; padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px; }
 
+/* Mapa de trajetos fixos */
+.painel-mapa { margin: 12px 0; }
+.painel-mapa > summary { cursor: pointer; padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px; }
+.mapa-seletor { width: 100%; min-height: 44px; margin: 10px 0; padding: 8px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; }
+.mapa-trajeto { height: 320px; border-radius: 8px; margin-bottom: 10px; }
+.mapa-trajeto[hidden], .mapa-totais[hidden] { display: none; }
+.mapa-legenda { list-style: none; font-size: 0.85rem; margin: 8px 0; }
+.mapa-legenda li { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
+.mapa-legenda .amostra { flex: none; width: 28px; border-top: 4px solid; }
+.mapa-legenda .faixa-ativa { border-color: var(--nivel-alto); }
+.mapa-legenda .area-sem-faixa { border-color: var(--nivel-atencao); }
+.mapa-legenda .nao-avaliado { border-color: var(--text-muted); border-top-style: dashed; }
+.mapa-totais { font-size: 0.88rem; margin: 8px 0; }
+.mapa-totais div { display: flex; justify-content: space-between; gap: 12px; padding: 4px 0; border-top: 1px solid var(--border-color); }
+.mapa-totais dd { font-weight: 700; white-space: nowrap; }
+
 /* Texto só para leitor de tela */
 .so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

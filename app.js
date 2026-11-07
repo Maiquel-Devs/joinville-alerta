@@ -499,6 +499,7 @@
     renderLista();
   }
 
+  MAPA.init({ base: API.replace('/status-geral', '') }); // mapa de trajetos fixos (mapa.js); a base vem da constante da API
   $('btn-location').addEventListener('click', usarGps);
   $('busca').addEventListener('input', (e) => {
     busca = e.target.value;

@@ -1,6 +1,6 @@
 // Service Worker: cache primeiro para tudo que é do próprio app, atualizando em segundo plano.
 // Suba a versão sempre que mudar qualquer arquivo da lista (inclusive data/*.geojson).
-const VERSAO = 'v22';
+const VERSAO = 'v23';
 const CACHE_NAME = `joinville-alerta-${VERSAO}`;
 const ASSETS_TO_CACHE = [
   './',
@@ -9,6 +9,7 @@ const ASSETS_TO_CACHE = [
   './app.js',
   './pip.js',
   './idade.js',
+  './mapa.js',
   './ruas.js',
   './manifest.json',
   './icons/icon-192.png',
