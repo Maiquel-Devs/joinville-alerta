@@ -62,7 +62,8 @@ def montar_trajeto(trajeto: dict, status: dict) -> dict:
         classe = classificar_trecho(f["properties"]["faixas"], ativas)
         m = f["properties"]["m"]
         metros[classe] += m
-        feats.append({"type": "Feature", "properties": {"classe": classe, "m": m}, "geometry": f["geometry"]})
+        props = {"classe": classe, "m": m, "nomes": f["properties"].get("nomes", []), "osmid": f["properties"].get("osmid")}
+        feats.append({"type": "Feature", "properties": props, "geometry": f["geometry"]})
     base.update(
         status="ok",
         total_km=round(sum(metros.values()) / 1000, 3),

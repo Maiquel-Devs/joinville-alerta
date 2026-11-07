@@ -71,3 +71,69 @@ test('Leaflet: versão fixa 1.9.4 com integridade sha256', () => {
   assert.match(LEAFLET.js.integrity, /^sha256-[A-Za-z0-9+/]{43}=$/);
   assert.match(LEAFLET.css.integrity, /^sha256-[A-Za-z0-9+/]{43}=$/);
 });
+
+// --- destaque da rua digitada ----------------------------------------------------------
+const { trechosDaRua, mensagemDaRua, ROTULO_CLASSE } = require('../mapa.js');
+
+const F = (nomes, classe = 'area_sem_faixa_ativa') => ({ properties: { nomes, classe, m: 10 } });
+const TRECHOS = [
+  F(['Rua Aubé']),
+  F(['Rua Aubé', 'Rua Albano Schmidt'], 'faixa_ativa'),
+  F(['Rua Albano Schmidt']),
+  F([], 'nao_avaliado'), // via sem nome
+  F(['Avenida Juscelino Kubitschek'], 'nao_avaliado'),
+  F(['Rua Doutor Plácido Olímpio de Oliveira']),
+];
+
+test('trechosDaRua: ignora acento e caixa', () => {
+  assert.deepEqual(trechosDaRua(TRECHOS, 'AUBE'), [0, 1]);
+  assert.deepEqual(trechosDaRua(TRECHOS, 'rua aubé'), [0, 1]);
+  assert.deepEqual(trechosDaRua(TRECHOS, 'DOUTOR PLÁCIDO'), [5]);
+});
+
+test('trechosDaRua: igual ou começa com, não "contém"', () => {
+  assert.deepEqual(trechosDaRua(TRECHOS, 'rua albano schmidt'), [1, 2]);
+  assert.deepEqual(trechosDaRua(TRECHOS, 'albano'), [1, 2]);
+  assert.deepEqual(trechosDaRua(TRECHOS, 'schmidt'), []);
+  assert.deepEqual(trechosDaRua(TRECHOS, 'kubitschek'), []);
+});
+
+test('trechosDaRua: lista com dois nomes casa por qualquer um', () => {
+  assert.ok(trechosDaRua(TRECHOS, 'Rua Albano Schmidt').includes(1));
+  assert.ok(trechosDaRua(TRECHOS, 'Rua Aubé').includes(1));
+});
+
+test('trechosDaRua: via sem nome nunca casa', () => {
+  assert.ok(!trechosDaRua(TRECHOS, 'rua').includes(3));
+  assert.deepEqual(trechosDaRua([F([]), { properties: {} }], 'qualquer'), []);
+});
+
+test('trechosDaRua: menos de 3 caracteres não busca', () => {
+  assert.deepEqual(trechosDaRua(TRECHOS, ''), []);
+  assert.deepEqual(trechosDaRua(TRECHOS, 'ru'), []);
+  assert.deepEqual(trechosDaRua(TRECHOS, '  a  '), []);
+  assert.deepEqual(trechosDaRua(TRECHOS, null), []);
+});
+
+test('trechosDaRua: rua fora dos trajetos não casa com nada', () => {
+  assert.deepEqual(trechosDaRua(TRECHOS, 'Rua XV de Novembro'), []);
+  assert.deepEqual(trechosDaRua(null, 'Aubé'), []);
+});
+
+test('mensagemDaRua: vazia, dentro (com rótulo da legenda) e fora', () => {
+  assert.equal(mensagemDaRua(TRECHOS, 'ru'), '');
+  assert.equal(
+    mensagemDaRua(TRECHOS, 'Doutor Plácido'),
+    `A rua digitada faz parte deste trajeto. Trecho: ${ROTULO_CLASSE.area_sem_faixa_ativa}.`,
+  );
+  assert.match(mensagemDaRua(TRECHOS, 'aubé'), /Faixa ativa no cenário; Área mapeada pelo PDDU, sem faixa ativa\.$/);
+  assert.equal(
+    mensagemDaRua(TRECHOS, 'Rua XV de Novembro'),
+    'Esta rua não faz parte dos trajetos fixos deste mapa. Isso não significa que não haja risco de alagar.',
+  );
+});
+
+test('rótulos das classes são os da legenda do index.html', () => {
+  const html = require('node:fs').readFileSync(require('node:path').join(__dirname, '..', 'index.html'), 'utf8');
+  for (const rotulo of Object.values(ROTULO_CLASSE)) assert.ok(html.includes(rotulo), rotulo);
+});

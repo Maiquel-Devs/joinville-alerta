@@ -135,7 +135,7 @@ def test_arquivos_reais_batem_com_o_indice():
         arq = raiz / f"{t['id']}.geojson"
         assert arq.stat().st_size <= 100 * 1024
         for f in json.loads(arq.read_text(encoding="utf-8"))["features"]:
-            assert set(f["properties"]) == {"faixas", "m"} and f["geometry"]["type"] == "LineString"
+            assert set(f["properties"]) == {"faixas", "m", "nomes", "osmid"} and f["geometry"]["type"] == "LineString"
             assert set(f["properties"]["faixas"]) <= set(FAIXAS)
 
 
@@ -173,3 +173,77 @@ def test_variavel_de_ambiente_sobrescreve_o_diretorio(tmp_path):
     env = {**os.environ, "TRAJETOS_DIR": str(tmp_path)}
     saida = subprocess.run([sys.executable, "-c", codigo], env=env, capture_output=True, text=True, check=True)
     assert Path(saida.stdout.strip()) == tmp_path
+
+
+# --- nomes das vias e metros inteiros -------------------------------------------------
+
+def _trajeto_real(id_):
+    trajetos.indice.cache_clear()
+    trajetos._geojson.cache_clear()
+    return trajetos.montar_trajeto(trajetos.trajeto_por_id(id_), _status(mare_1_6=True))
+
+
+@pytest.mark.parametrize("id_", ["centro_boa_vista", "rodoviaria_padre_antonio_vieira"])
+def test_trechos_reais_trazem_nomes_e_classe(id_):
+    r = _trajeto_real(id_)
+    assert r["status"] == "ok"
+    for f in r["trechos"]["features"]:
+        p = f["properties"]
+        assert isinstance(p["nomes"], list) and all(isinstance(n, str) for n in p["nomes"])
+        assert p["classe"] in (ATIVA, AREA, NAO) and "osmid" in p
+
+
+@pytest.mark.parametrize("id_", ["centro_boa_vista", "rodoviaria_padre_antonio_vieira"])
+def test_soma_de_m_e_igual_ao_total_km(id_):
+    r = _trajeto_real(id_)
+    soma = sum(f["properties"]["m"] for f in r["trechos"]["features"])
+    assert round(soma / 1000, 3) == r["total_km"]
+    assert sum(r["totais_km"].values()) == pytest.approx(r["total_km"], abs=1e-9)
+
+
+def test_totais_do_centro_boa_vista_com_mare_1_6_ativa():
+    r = _trajeto_real("centro_boa_vista")
+    assert r["totais_km"] == {ATIVA: 0.094, AREA: 1.32, NAO: 2.578}
+    assert r["total_km"] == 3.992
+
+
+def test_trecho_sem_nome_mantem_lista_vazia_e_classe():
+    r = _trajeto_real("rodoviaria_padre_antonio_vieira")
+    sem_nome = [f for f in r["trechos"]["features"] if not f["properties"]["nomes"]]
+    assert all("classe" in f["properties"] for f in sem_nome)
+
+
+def test_montar_trajeto_repassa_nomes_e_osmid(dados_fake):
+    caminho = trajetos.DIR_TRAJETOS / "teste.geojson"
+    col = json.loads(caminho.read_text(encoding="utf-8"))
+    col["features"][0]["properties"].update(nomes=["Rua A", "Rua B"], osmid=[1, 2])
+    caminho.write_text(json.dumps(col), encoding="utf-8")
+    trajetos._geojson.cache_clear()
+    feats = trajetos.montar_trajeto(trajetos.trajeto_por_id("teste"), _status(mare_1_6=True))["trechos"]["features"]
+    assert feats[0]["properties"]["nomes"] == ["Rua A", "Rua B"] and feats[0]["properties"]["osmid"] == [1, 2]
+    assert feats[1]["properties"]["nomes"] == []  # arquivo sem a chave: lista vazia, classe intacta
+    assert feats[0]["properties"]["classe"] == ATIVA
+
+
+def _metros_inteiros():
+    """metros_inteiros de scripts/gerar_trajetos.py, sem importar o script (que exige osmnx)."""
+    import ast
+
+    fonte = (Path(__file__).resolve().parents[2] / "scripts" / "gerar_trajetos.py").read_text(encoding="utf-8")
+    funcao = next(n for n in ast.parse(fonte).body if isinstance(n, ast.FunctionDef) and n.name == "metros_inteiros")
+    escopo = {}
+    exec(compile(ast.Module([funcao], []), "gerar_trajetos.py", "exec"), escopo)
+    return escopo["metros_inteiros"]
+
+
+@pytest.mark.parametrize("exatos", [
+    [10.4, 10.4, 10.4, 10.4, 10.4],           # arredondar cada um daria 52; o total exato é 52,0
+    [0.5 + 14.6, 2.7, 3.7, 9.9],              # soma 31,4 -> 31
+    [28.49, 28.49, 28.49],                    # cada um arredonda para 28 (84); o total exato é 85,47 -> 85
+    [1.2, 15.0, 3992.479 - 16.2],
+])
+def test_metros_inteiros_soma_o_total_exato_arredondado(exatos):
+    metros = _metros_inteiros()([{"m": x} for x in exatos])
+    assert sum(metros) == round(sum(exatos))
+    assert all(isinstance(m, int) and m >= 1 for m in metros)
+    assert all(abs(m - x) < 1 + 1e-9 or m == 1 for m, x in zip(metros, exatos))

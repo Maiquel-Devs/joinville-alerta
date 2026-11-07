@@ -242,6 +242,8 @@ footer strong { color: var(--text-primary); }
 .painel-mapa { margin: 12px 0; }
 .painel-mapa > summary { cursor: pointer; padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px; }
 .mapa-seletor { width: 100%; min-height: 44px; margin: 10px 0; padding: 8px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; }
+.mapa-rua-msg { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 10px; }
+.mapa-rua-msg:empty { display: none; }
 .mapa-trajeto { height: 320px; border-radius: 8px; margin-bottom: 10px; }
 .mapa-trajeto[hidden], .mapa-totais[hidden] { display: none; }
 .mapa-legenda { list-style: none; font-size: 0.85rem; margin: 8px 0; }

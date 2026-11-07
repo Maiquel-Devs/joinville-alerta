@@ -184,6 +184,7 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | **Render acordado** | Usar ping gratuito a cada ~10 min (tarefa 9.3) e documentar o comportamento sem ele | 29/10/2026 |
 | **Mapa de trajetos fixos no app** | Mapa de trajetos fixos no app (06/11/2026): substitui 'sem mapa na interface' (12/10/2026). Trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. | 06/11/2026 |
 | **Trajetos fixos: faixa indisponível** | Trajetos fixos: se qualquer faixa estiver indisponível ou o cache estiver vazio, o back-end devolve 'indisponivel' e não classifica trechos. 'Nenhuma faixa ativa' só vale com todas as faixas com dado. | 06/11/2026 |
+| **Busca por rua no mapa** | Busca por rua no mapa: a rua digitada só é destacada se fizer parte de um trajeto fixo. Ruas fora dos trajetos não aparecem e não geram rota. | 07/11/2026 |
 | Fonte da maré, referencial vertical, significado de 1,6 m, limiar pluvial | _a preencher (0.7); a Etapa 6 fornece os números_ | |
 
 ## Dados de terceiros (joinville_meteo)

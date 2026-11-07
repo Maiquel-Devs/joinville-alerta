@@ -95,14 +95,28 @@ def _aresta(g, u, v):
     return dados, transformar(_UTM, geo)
 
 
+def _nomes(valor):
+    """Nome(s) OSM da via como tupla de textos (vazia se a via não tem nome)."""
+    if not valor:
+        return ()
+    return tuple(valor) if isinstance(valor, (list, tuple)) else (valor,)
+
+
+def _osmid(valor):
+    """Id(s) OSM da via: um inteiro, ou lista ordenada quando a aresta junta várias ways."""
+    ids = sorted(int(k) for k in _ids(valor))
+    return ids[0] if len(ids) == 1 else ids
+
+
 def fatiar(g, trajeto, trechos, por_id):
-    """Fatias de ~PASSO_M metros do caminho mais curto: [(pontos WGS84, metros, faixas ordenadas)]."""
+    """Fatias de ~PASSO_M metros do caminho mais curto: [(pontos WGS84, metros, faixas, nomes, osmid)]."""
     o, d = trajeto["origem"], trajeto["destino"]
     caminho = nx.shortest_path(g, no_mais_proximo(g, o["lat"], o["lon"]),
                                no_mais_proximo(g, d["lat"], d["lon"]), weight="length")
     fatias = []
     for u, v in zip(caminho[:-1], caminho[1:]):
         dados, linha = _aresta(g, u, v)
+        nomes, osmid = _nomes(dados.get("name")), _osmid(dados["osmid"])
         cand = [i for k in _ids(dados["osmid"]) for i in por_id.get(int(k), [])]
         n = max(1, int(np.ceil(linha.length / PASSO_M)))
         for j in range(n):
@@ -113,28 +127,51 @@ def fatiar(g, trajeto, trechos, por_id):
                 if trechos[i]["geom"].distance(meio) <= TOL_M:
                     faixas |= trechos[i]["faixas"]
             pontos = [tuple(p) for p in transformar(_WGS, LineString([ini, fim])).coords]
-            fatias.append((pontos, ini.distance(fim), tuple(sorted(faixas))))
+            fatias.append((pontos, ini.distance(fim), tuple(sorted(faixas)), nomes, osmid))
     return fatias
 
 
 def juntar(fatias):
-    """Une fatias vizinhas de mesmas faixas num só trecho: [(coords, metros, faixas)]."""
+    """Une fatias vizinhas de mesmas faixas, mesmos nomes e mesma via num só trecho."""
     trechos = []
-    for pontos, metros, faixas in fatias:
-        if trechos and trechos[-1]["faixas"] == faixas:
+    for pontos, metros, faixas, nomes, osmid in fatias:
+        if trechos and (trechos[-1]["faixas"], trechos[-1]["nomes"], trechos[-1]["osmid"]) == (faixas, nomes, osmid):
             trechos[-1]["coords"].append(pontos[1])
             trechos[-1]["m"] += metros
         else:
-            trechos.append({"coords": list(pontos), "m": metros, "faixas": faixas})
+            trechos.append({"coords": list(pontos), "m": metros, "faixas": faixas, "nomes": nomes, "osmid": osmid})
     return trechos
+
+
+def metros_inteiros(trechos):
+    """Metros inteiros por trecho pelo método do maior resto: a soma dos inteiros do trajeto é igual
+    ao total exato (arredondado), sem que o arredondamento de cada trecho desloque o total."""
+    exatos = [t["m"] for t in trechos]
+    alvo = round(sum(exatos))
+    base = [max(1, int(x)) for x in exatos]
+    falta = alvo - sum(base)
+    ordem = sorted(range(len(exatos)), key=lambda i: exatos[i] - int(exatos[i]), reverse=(falta > 0))
+    i = 0
+    while falta != 0 and ordem:
+        k = ordem[i % len(ordem)]
+        if falta > 0:
+            base[k] += 1
+            falta -= 1
+        elif base[k] > 1:
+            base[k] -= 1
+            falta += 1
+        i += 1
+    return base
 
 
 def para_geojson(trechos):
     feats = []
-    for t in trechos:
+    inteiros = metros_inteiros(trechos)
+    for t, metros in zip(trechos, inteiros):
         coords = [[round(x, CASAS), round(y, CASAS)] for x, y in t["coords"]]
         feats.append({"type": "Feature",
-                      "properties": {"faixas": list(t["faixas"]), "m": max(1, round(t["m"]))},
+                      "properties": {"faixas": list(t["faixas"]), "m": metros,
+                                     "nomes": list(t["nomes"]), "osmid": t["osmid"]},
                       "geometry": {"type": "LineString", "coordinates": coords}})
     return {"type": "FeatureCollection", "features": feats}
 
