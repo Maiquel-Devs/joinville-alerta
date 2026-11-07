@@ -7,10 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from contextlib import asynccontextmanager
 
+import rota_exposicao
 import trajetos
 from cache_store import status_geral
 from config import CICLO_MIN
 from scheduler import update_telemetry_job
+from sources import agora
 
 scheduler = AsyncIOScheduler()
 
@@ -55,3 +57,45 @@ async def get_trajeto(id_: str):
     if trajeto is None:
         raise HTTPException(status_code=404, detail="Trajeto não encontrado")
     return trajetos.montar_trajeto(trajeto, status_geral())
+
+
+@app.get("/api/v1/rota")
+def get_rota(origem: str, destino: str, origem_no: int | None = None, destino_no: int | None = None):
+    """Caminho mais curto e caminho de menor exposição às faixas do PDDU entre duas ruas.
+
+    Métrica de exposição, não recomendação. Sem texto para o usuário: o front monta os textos.
+    origem_no / destino_no (opcionais): nó escolhido pelo usuário entre as opções de um resultado
+    "ambiguo". Sem eles, nome ambíguo devolve as opções e não calcula.
+    """
+    for campo, texto in (("origem", origem), ("destino", destino)):
+        if rota_exposicao.consulta(texto) is None:
+            raise HTTPException(status_code=400, detail={"campo": campo, "motivo": "curto"})
+    try:
+        rede = rota_exposicao.rede()
+    except OSError:
+        raise HTTPException(status_code=503, detail={"motivo": "grafo_indisponivel"})
+    for campo, no in (("origem_no", origem_no), ("destino_no", destino_no)):
+        if no is not None and no not in rede.g:
+            raise HTTPException(status_code=400, detail={"campo": campo, "motivo": "no_inexistente"})
+
+    lados = {}
+    for campo, texto, no in (("origem", origem, origem_no), ("destino", destino, destino_no)):
+        if no is not None:
+            d = rede.g.nodes[no]
+            lados[campo] = {"ambiguo": False, "total_opcoes": 1,
+                            "opcoes": [{"nome": None, "rotulo": None, "trechos": None, "no": no, "lat": d["lat"], "lon": d["lon"]}]}
+        else:
+            lados[campo] = rota_exposicao.resolver(rede, texto)
+    if any(lado["ambiguo"] for lado in lados.values()):
+        return {"status": "ambiguo", **lados}
+    if any(lado["total_opcoes"] == 0 for lado in lados.values()):
+        return {"status": "nao_encontrado", **lados}
+
+    estado = status_geral()
+    ativas = rota_exposicao.faixas_ativas_validas(estado, agora())
+    if ativas is None:
+        return {"status": "indisponivel", "gerado_em": estado.get("gerado_em"), **lados}
+    o, d = lados["origem"]["opcoes"][0], lados["destino"]["opcoes"][0]
+    resultado = rota_exposicao.calcular(rede, o["no"], d["no"], ativas)
+    return {**resultado, "gerado_em": estado.get("gerado_em"), "faixas_ativas": list(ativas),
+            "origem": o, "destino": d}

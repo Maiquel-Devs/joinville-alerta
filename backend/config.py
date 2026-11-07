@@ -9,6 +9,8 @@ LONGITUDE = -48.8456
 # Ciclo do scheduler e validade do dado (o dobro do ciclo)
 CICLO_MIN = 15
 VALIDADE_MIN = 30
+# Teto de idade do dado: passado isso, o estado vira indisponível (o mesmo valor de idade.js no front).
+IDADE_MAX_MIN = 120
 
 # Gatilhos de maré: metros ACIMA do nível médio (não da régua). Ver 0.2/0.3.
 # PROVISÓRIOS: sem calibração por frequência até a tarefa 6.5 (relação CIRAM × Iate Clube e
