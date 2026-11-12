@@ -262,3 +262,21 @@ footer strong { color: var(--text-primary); }
 
 /* Texto só para leitor de tela */
 .so-leitor { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Caminho livre */
+.caminho-livre { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color); }
+.caminho-livre h3 { font-size: 1rem; margin-bottom: 6px; }
+.caminho-botao, .caminho-voltar, .caminho-opcao { min-height: 44px; padding: 8px 12px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+.caminho-botao[aria-pressed="true"] { border-color: #7dd3fc; outline: 2px solid #7dd3fc; outline-offset: -2px; font-weight: 700; }
+.caminho-ver { display: flex; gap: 8px; margin: 8px 0; }
+.caminho-ver .caminho-botao { flex: 1 1 0; }
+.caminho-voltar { width: 100%; margin: 4px 0 8px; color: var(--text-muted); }
+.caminho-comparacao { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.caminho-cartao { border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-width: 0; }
+.caminho-cartao h4 { font-size: 0.9rem; margin-bottom: 4px; }
+.caminho-cartao .mapa-totais { font-size: 0.8rem; }
+.caminho-cartao .mapa-totais div { flex-direction: column; gap: 0; }
+.caminho-lado { margin: 8px 0; display: grid; gap: 6px; }
+.caminho-lado p { font-size: 0.85rem; font-weight: 600; }
+.caminho-opcao { text-align: left; }
+.caminho-opcoes[hidden], #caminho-resultado[hidden] { display: none; }

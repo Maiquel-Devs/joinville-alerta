@@ -259,3 +259,94 @@ test('rótulos das classes são os da legenda do index.html', () => {
   const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
   for (const rotulo of Object.values(ROTULO_CLASSE)) assert.ok(html.includes(rotulo), rotulo);
 });
+
+// --- caminho livre, textos e altitude (12/11/2026) ---------------------------------------------------
+const { urlRota, resumoCaminho, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
+const RUAS = require('../ruas.js');
+const PROIBIDAS = /segur|mancha|caminho até|\brota\b/i;
+const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
+// Texto visível do index.html: sem comentários, scripts, estilos nem marcação.
+const textoVisivel = html
+  .replace(/<!--[\s\S]*?-->/g, ' ')
+  .replace(/<(script|style)[\s\S]*?<\/\1>/gi, ' ')
+  .replace(/<[^>]+>/g, ' ');
+
+test('urlRota: codifica as ruas e só envia origem_no / destino_no quando escolhidos', () => {
+  assert.equal(urlRota('http://x/api/v1', ' Rua do Príncipe ', 'Horto'), 'http://x/api/v1/rota?origem=Rua+do+Pr%C3%ADncipe&destino=Horto');
+  const u = urlRota('http://x/api/v1', 'a b', 'c d', 12, 34);
+  assert.ok(u.endsWith('&origem_no=12&destino_no=34'), u);
+  assert.ok(!urlRota('http://x', 'abc', 'def', null, 7).includes('origem_no'));
+});
+
+test('resumoCaminho: total e as três classes, com vírgula decimal', () => {
+  assert.deepEqual(
+    resumoCaminho({ km: 3.992, km_por_classe: { faixa_ativa: 0.5, area_sem_faixa_ativa: 1.25, nao_avaliado: 2.242 } }),
+    { total: '3,99 km', faixa_ativa: '0,50 km', area_sem_faixa_ativa: '1,25 km', nao_avaliado: '2,24 km' },
+  );
+});
+
+const caminho = { km: 1, km_por_classe: {}, trechos: { type: 'FeatureCollection', features: [] } };
+const lado = (ambiguo, opcoes = []) => ({ ambiguo, total_opcoes: opcoes.length, opcoes });
+
+test('interpretarRota: ok, com e sem teto aplicado', () => {
+  const base = { status: 'ok', caminho_curto: caminho, caminho_exposicao: caminho };
+  assert.deepEqual(interpretarRota(200, { ...base, teto_aplicado: false }), { tipo: 'ok', teto: false, mensagemTeto: '' });
+  const t = interpretarRota(200, { ...base, teto_aplicado: true });
+  assert.equal(t.mensagemTeto, 'O caminho de menor exposição ficaria mais de 20% mais longo; exibindo o mais curto.');
+  assert.equal(interpretarRota(200, { status: 'ok' }).tipo, 'erro'); // ok sem os dois caminhos nunca é aceito
+});
+
+test('interpretarRota: ambíguo lista só os lados ambíguos, com rótulo e nó, sem escolher', () => {
+  const r = interpretarRota(200, {
+    status: 'ambiguo',
+    origem: lado(false, [{ rotulo: null, no: 1 }]),
+    destino: lado(true, [{ rotulo: 'Rua Aubé (3 trechos)', no: 10 }, { rotulo: 'Rua Aubé (1 trechos)', no: 11 }]),
+  });
+  assert.equal(r.tipo, 'ambiguo');
+  assert.equal(r.lados.length, 1);
+  assert.equal(r.lados[0].campo, 'destino');
+  assert.deepEqual(r.lados[0].opcoes, [{ rotulo: 'Rua Aubé (3 trechos)', no: 10 }, { rotulo: 'Rua Aubé (1 trechos)', no: 11 }]);
+});
+
+test('interpretarRota: demais status e HTTP 400 têm o texto pedido', () => {
+  assert.equal(interpretarRota(200, { status: 'indisponivel' }).mensagem, 'Os dados de maré e chuva estão desatualizados. Tente mais tarde.');
+  assert.equal(interpretarRota(200, { status: 'sem_caminho' }).mensagem, 'Não há caminho entre essas ruas dentro da malha mapeada.');
+  assert.equal(interpretarRota(400, { detail: {} }).mensagem, 'Digite pelo menos 3 letras em cada rua.');
+  assert.equal(interpretarRota(200, { status: 'nao_encontrado' }).tipo, 'nao_encontrado');
+  for (const [http, corpo] of [[503, null], [0, null], [200, null], [500, {}], [200, { status: 'x' }]]) {
+    assert.equal(interpretarRota(http, corpo).tipo, 'erro', `${http}`);
+  }
+});
+
+test('textos visíveis (index.html, caminho livre, cenários) não usam as palavras vetadas', () => {
+  assert.ok(textoVisivel.includes('Caminho livre'), 'o painel novo está no index.html');
+  assert.ok(!PROIBIDAS.test(textoVisivel), `index.html: ${textoVisivel.match(PROIBIDAS)}`);
+  for (const [nome, t] of Object.entries(TEXTOS_ROTA)) assert.ok(!PROIBIDAS.test(t), `${nome}: ${t}`);
+  for (const [id, t] of Object.entries(RUAS.CENARIO)) assert.ok(!PROIBIDAS.test(t), `${id}: ${t}`);
+  for (const c of [{ cmin: 9, cmax: 9 }, { cmin: 8, cmax: 9.5 }]) assert.ok(!PROIBIDAS.test(RUAS.formatarAltitude(c.cmin, c.cmax)));
+  for (const r of [interpretarRota(200, { status: 'ambiguo', origem: lado(true), destino: lado(false) }), interpretarRota(0, null)]) {
+    assert.ok(!PROIBIDAS.test(r.mensagem ?? ''));
+  }
+});
+
+test('caminho livre: avisos fixos e atribuição estão no painel', () => {
+  for (const frase of [TEXTOS_ROTA.nao_avaliado, TEXTOS_ROTA.metrica, 'Rua de origem', 'Rua de destino', 'Mais curto', 'Menor exposição', 'OpenStreetMap', 'OpenFreeMap']) {
+    assert.ok(textoVisivel.includes(frase), frase);
+  }
+});
+
+test('formatarAltitude: valor único quando mínimo e máximo coincidem', () => {
+  assert.equal(RUAS.formatarAltitude(9, 9), 'Altitude aproximada: 9,0 m');
+  assert.equal(RUAS.formatarAltitude(9.04, 8.96), 'Altitude aproximada: 9,0 m'); // iguais na casa exibida
+  assert.equal(RUAS.formatarAltitude(8.5, 9.5), 'Altitude aproximada: 8,5 a 9,5 m');
+});
+
+test('cenários: frases com verbo ("só aparece ...")', () => {
+  assert.equal(RUAS.CENARIO.pluvial_vn_tr25, 'só aparece no cenário de cheia de 25 anos, o mais raro');
+  for (const t of Object.values(RUAS.CENARIO)) assert.match(t, /aparece/);
+});
+
+test('rótulo do trajeto da Rodoviária descreve o ponto médio do trecho', () => {
+  assert.match(html, /<option value="rodoviaria_padre_antonio_vieira">Rodoviária → meio da Rua Padre Antônio Vieira<\/option>/);
+  assert.ok(!html.includes('Rodoviária → Rua Padre'));
+});

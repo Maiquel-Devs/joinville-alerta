@@ -21,10 +21,10 @@
 
   const CENARIO = {
     mare_1_6: 'aparece no cenário de maré de 1,6 m, o mais frequente entre os de maré',
-    mare_2_5: 'só no cenário de maré de 2,5 m, o mais raro entre os de maré',
+    mare_2_5: 'só aparece no cenário de maré de 2,5 m, o mais raro entre os de maré',
     pluvial_vn_tr5: 'aparece no cenário de cheia de 5 anos, o mais frequente',
-    pluvial_vn_tr10: 'só a partir do cenário de cheia de 10 anos, de frequência intermediária',
-    pluvial_vn_tr25: 'só no cenário de cheia de 25 anos, o mais raro',
+    pluvial_vn_tr10: 'só aparece a partir do cenário de cheia de 10 anos, de frequência intermediária',
+    pluvial_vn_tr25: 'só aparece no cenário de cheia de 25 anos, o mais raro',
   };
 
   // Filtro das feições de uma mancha para a faixa (Vila Nova: cenário Atual do tempo de retorno da faixa).
@@ -43,6 +43,13 @@
       if (faixa) out.push({ familia: fam.id, faixa, texto: CENARIO[faixa], explica: fam.explica });
     }
     return out;
+  }
+
+  // Altitude da via para o texto do cartão: "9,0 m" quando mínimo e máximo coincidem (uma casa decimal), senão "8,5 a 9,5 m".
+  function formatarAltitude(cmin, cmax) {
+    const f = (n) => Number(n).toFixed(1).replace(".", ",");
+    const a = f(cmin), b = f(cmax);
+    return a === b ? `Altitude aproximada: ${a} m` : `Altitude aproximada: ${a} a ${b} m`;
   }
 
   // --- estado (uma só regra para diagnóstico, entorno, lista geral e GPS) ----------------------
@@ -219,7 +226,7 @@
 
   const api = {
     FAIXAS, FAMILIAS, CENARIO, RAIO_HOMONIMO_M,
-    filtroDe, cenariosDaVia, estadoDeFaixas, estadoDaRua, semAcento, filtrarRuasDaFaixa,
+    filtroDe, cenariosDaVia, formatarAltitude, estadoDeFaixas, estadoDaRua, semAcento, filtrarRuasDaFaixa,
     projetar, distPontoSegmento, distSegmentoSegmento, distLinhas,
     construirIndice, achar, refDoPonto, escolherGrupo, vizinhas,
   };

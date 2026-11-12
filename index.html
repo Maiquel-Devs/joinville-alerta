@@ -71,7 +71,7 @@
       <label for="mapa-seletor" class="so-leitor">Trajeto</label>
       <select id="mapa-seletor" class="mapa-seletor">
         <option value="centro_boa_vista">Centro → Boa Vista</option>
-        <option value="rodoviaria_padre_antonio_vieira">Rodoviária → Rua Padre Antônio Vieira</option>
+        <option value="rodoviaria_padre_antonio_vieira">Rodoviária → meio da Rua Padre Antônio Vieira</option>
       </select>
       <div class="mapa-campos">
         <label for="mapa-rua-inicio">Rua de início</label>
@@ -93,7 +93,34 @@
         <div><dt>Não avaliado</dt><dd id="mapa-km-nao">—</dd></div>
         <div><dt>Total</dt><dd id="mapa-km-total">—</dd></div>
       </dl>
-      <p class="resumo">Métrica de exposição do PDDU. Não é recomendação de rota.</p>
+      <p class="resumo">Métrica de exposição do PDDU. Não é recomendação de trajeto.</p>
+
+      <!-- Caminho livre: o back-end calcula o caminho mais curto e o de menor exposição entre duas ruas; aqui só se mostra. -->
+      <section class="caminho-livre" aria-labelledby="caminho-titulo">
+        <h3 id="caminho-titulo">Caminho livre</h3>
+        <p class="resumo">Compare o caminho mais curto com o de menor exposição às áreas mapeadas pelo PDDU entre duas ruas.</p>
+        <form id="caminho-form" class="mapa-campos">
+          <label for="caminho-origem">Rua de origem</label>
+          <input id="caminho-origem" class="mapa-campo" type="search" autocomplete="off" placeholder="ex: Príncipe" />
+          <label for="caminho-destino">Rua de destino</label>
+          <input id="caminho-destino" class="mapa-campo" type="search" autocomplete="off" placeholder="ex: Horto Florestal" />
+          <button id="caminho-enviar" class="caminho-botao" type="submit">Comparar caminhos</button>
+        </form>
+        <p id="caminho-msg" class="mapa-rua-msg" role="status" aria-live="polite"></p>
+        <div id="caminho-opcoes" class="caminho-opcoes" hidden></div>
+        <div id="caminho-resultado" hidden>
+          <div id="caminho-comparacao" class="caminho-comparacao"></div>
+          <p id="caminho-teto" class="mapa-rua-msg" role="status"></p>
+          <div id="caminho-ver" class="caminho-ver" role="group" aria-label="Caminho exibido no mapa">
+            <button id="caminho-ver-curto" type="button" class="caminho-botao" aria-pressed="true">Mais curto</button>
+            <button id="caminho-ver-exposicao" type="button" class="caminho-botao" aria-pressed="false">Menor exposição</button>
+          </div>
+          <button id="caminho-voltar" type="button" class="caminho-voltar">Voltar ao trajeto fixo</button>
+        </div>
+        <p class="resumo">Não avaliado não significa ausência de risco.</p>
+        <p class="resumo">Métrica de exposição do PDDU. Não é recomendação de trajeto.</p>
+        <p class="resumo muted">Mapa: © colaboradores do <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a>; fundo <a href="https://openfreemap.org" target="_blank" rel="noopener">OpenFreeMap</a> © OpenMapTiles.</p>
+      </section>
     </details>
   </main>
 

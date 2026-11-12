@@ -171,7 +171,71 @@
     return `${Number(km).toFixed(2).replace('.', ',')} km`;
   }
 
-  const api = { decidirMapa, estiloDoTrecho, estiloDestacado, estiloEsmaecido, formatarKm, casarNome, resolverIntervalo, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
+  // --- caminho livre: entre duas ruas, o mais curto e o de menor exposição (GET /rota) -----------------------
+  // Métrica de exposição às faixas do PDDU; o back-end calcula os dois caminhos, aqui só se mostra.
+  const TEXTOS_ROTA = {
+    teto: 'O caminho de menor exposição ficaria mais de 20% mais longo; exibindo o mais curto.',
+    indisponivel: 'Os dados de maré e chuva estão desatualizados. Tente mais tarde.',
+    sem_caminho: 'Não há caminho entre essas ruas dentro da malha mapeada.',
+    curto: 'Digite pelo menos 3 letras em cada rua.',
+    nao_encontrado: 'Não encontramos uma dessas ruas na malha mapeada. Isso não significa ausência de risco.',
+    erro: 'Caminho livre indisponível agora. Tente mais tarde.',
+    escolha: 'Há mais de uma rua com esse nome. Escolha a que você quer; o app não escolhe por você.',
+    mais_opcoes: 'Há mais opções do que as listadas. Digite mais letras do nome para refinar.',
+    nao_avaliado: 'Não avaliado não significa ausência de risco.',
+    metrica: 'Métrica de exposição do PDDU. Não é recomendação de trajeto.',
+    atribuicao: 'Mapa: © colaboradores do OpenStreetMap; fundo OpenFreeMap © OpenMapTiles.',
+  };
+  const CAMINHOS = { curto: 'caminho_curto', exposicao: 'caminho_exposicao' };
+
+  // Query string do pedido; origem_no / destino_no só entram quando o usuário escolheu uma opção.
+  function urlRota(base, origem, destino, origemNo, destinoNo) {
+    const q = new URLSearchParams({ origem: String(origem).trim(), destino: String(destino).trim() });
+    if (origemNo != null) q.set('origem_no', String(origemNo));
+    if (destinoNo != null) q.set('destino_no', String(destinoNo));
+    return `${base}/rota?${q}`;
+  }
+
+  // Quatro números de um caminho, já formatados: total, faixa ativa, área sem faixa ativa e não avaliado.
+  function resumoCaminho(desc) {
+    const k = desc?.km_por_classe ?? {};
+    return {
+      total: formatarKm(desc?.km ?? 0),
+      faixa_ativa: formatarKm(k.faixa_ativa ?? 0),
+      area_sem_faixa_ativa: formatarKm(k.area_sem_faixa_ativa ?? 0),
+      nao_avaliado: formatarKm(k.nao_avaliado ?? 0),
+    };
+  }
+
+  // Traduz a resposta do endpoint (HTTP + corpo JSON) em { tipo, ... } para a tela. Nunca devolve "ok" sem
+  // os dois caminhos, nem trata erro como ausência de risco.
+  function interpretarRota(http, corpo) {
+    if (http === 400) return { tipo: 'curto', mensagem: TEXTOS_ROTA.curto };
+    if (http !== 200 || !corpo || typeof corpo !== 'object') return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
+    switch (corpo.status) {
+      case 'ok':
+        if (!corpo.caminho_curto?.trechos || !corpo.caminho_exposicao?.trechos) return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
+        return { tipo: 'ok', teto: corpo.teto_aplicado === true, mensagemTeto: corpo.teto_aplicado === true ? TEXTOS_ROTA.teto : '' };
+      case 'ambiguo': {
+        const lados = ['origem', 'destino']
+          .filter((campo) => corpo[campo]?.ambiguo)
+          .map((campo) => ({
+            campo,
+            titulo: campo === 'origem' ? 'Rua de origem' : 'Rua de destino',
+            total: corpo[campo].total_opcoes,
+            opcoes: (corpo[campo].opcoes ?? []).map((o) => ({ rotulo: o.rotulo, no: o.no })),
+          }));
+        if (!lados.length) return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
+        return { tipo: 'ambiguo', lados, mensagem: TEXTOS_ROTA.escolha };
+      }
+      case 'indisponivel': return { tipo: 'indisponivel', mensagem: TEXTOS_ROTA.indisponivel };
+      case 'sem_caminho': return { tipo: 'sem_caminho', mensagem: TEXTOS_ROTA.sem_caminho };
+      case 'nao_encontrado': return { tipo: 'nao_encontrado', mensagem: TEXTOS_ROTA.nao_encontrado };
+      default: return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
+    }
+  }
+
+  const api = { decidirMapa, estiloDoTrecho, estiloDestacado, estiloEsmaecido, formatarKm, casarNome, resolverIntervalo, consulta, urlRota, resumoCaminho, interpretarRota, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
 
   // --- só no navegador -------------------------------------------------------------------
   if (typeof document !== 'undefined') {
@@ -252,7 +316,23 @@
       $('mapa-rua-inicio').addEventListener('input', destacar);
       $('mapa-rua-destino').addEventListener('input', destacar);
 
+      // Mapa único, usado pelos trajetos fixos e pelo caminho livre. Vista inicial no centro de Joinville:
+      // o plugin do fundo exige centro e zoom antes de entrar no mapa.
+      function criarMapa(L) {
+        if (mapa) return;
+        mapa = L.map('mapa-trajeto', { center: [-26.30, -48.845], zoom: 13 });
+        if (L.maplibreGL) {
+          try {
+            // O fundo entra antes dos trechos e fica no painel dos tiles, abaixo da camada de trechos.
+            L.maplibreGL({ style: ESTILO_FUNDO, attribution: ATRIBUICAO }).addTo(mapa);
+          } catch (e) {
+            console.warn('[mapa] fundo OpenFreeMap indisponível; mostrando só os trechos:', e);
+          }
+        }
+      }
+
       const mostrarIndisponivel = () => {
+        limparCaminho();
         if (camada) camada.remove();
         camada = null;
         trechos = null;
@@ -279,18 +359,8 @@
           $('mapa-aviso').hidden = true;
           $('mapa-trajeto').hidden = false;
           $('mapa-totais').hidden = false;
-          if (!mapa) {
-            // Vista inicial no centro de Joinville: o plugin do fundo exige centro e zoom antes de entrar no mapa.
-            mapa = L.map('mapa-trajeto', { center: [-26.30, -48.845], zoom: 13 });
-            if (L.maplibreGL) {
-              try {
-                // O fundo entra antes dos trechos e fica no painel dos tiles, abaixo da camada de trechos.
-                L.maplibreGL({ style: ESTILO_FUNDO, attribution: ATRIBUICAO }).addTo(mapa);
-              } catch (e) {
-                console.warn('[mapa] fundo OpenFreeMap indisponível; mostrando só os trechos:', e);
-              }
-            }
-          }
+          criarMapa(L);
+          limparCaminho();
           if (camada) camada.remove();
           camada = L.geoJSON(resposta.trechos, { style: (f) => estiloDoTrecho(f.properties.classe) }).addTo(mapa);
           trechos = resposta.trechos.features;
@@ -310,6 +380,143 @@
           mostrarIndisponivel();
         }
       }
+
+      // --- caminho livre ---------------------------------------------------------------------------
+      let camadaCaminho = null; // caminho desenhado agora
+      let ultimo = null; // resposta ok em exibição: { corpo, qual }
+      let escolhas = { origem: null, destino: null }; // nós escolhidos entre opções ambíguas
+      let pedidoCaminho = 0;
+      const msgCaminho = (texto) => {
+        $('caminho-msg').textContent = texto;
+      };
+      function limparCaminho() {
+        if (camadaCaminho) camadaCaminho.remove();
+        camadaCaminho = null;
+        ultimo = null;
+        $('caminho-resultado').hidden = true;
+      }
+      // Só textContent, nunca HTML vindo da API.
+      const el = (tag, texto, classe) => {
+        const e = document.createElement(tag);
+        if (texto != null) e.textContent = texto;
+        if (classe) e.className = classe;
+        return e;
+      };
+
+      function desenharCaminho(qual) {
+        ultimo.qual = qual;
+        for (const k of Object.keys(CAMINHOS)) $(`caminho-ver-${k}`).setAttribute('aria-pressed', String(k === qual));
+        if (!mapa) return;
+        if (camadaCaminho) camadaCaminho.remove();
+        camadaCaminho = raiz.L.geoJSON(ultimo.corpo[CAMINHOS[qual]].trechos, { style: (f) => estiloDoTrecho(f.properties.classe) }).addTo(mapa);
+        mapa.invalidateSize();
+        mapa.fitBounds(camadaCaminho.getBounds(), { padding: [20, 20] });
+      }
+
+      function mostrarComparacao(corpo, interp) {
+        ultimo = { corpo, qual: 'curto' };
+        const caixa = $('caminho-comparacao');
+        caixa.replaceChildren();
+        for (const [k, titulo] of [['curto', 'Mais curto'], ['exposicao', 'Menor exposição']]) {
+          const r = resumoCaminho(corpo[CAMINHOS[k]]);
+          const cartao = el('div', null, 'caminho-cartao');
+          cartao.append(el('h4', titulo));
+          const dl = el('dl', null, 'mapa-totais');
+          for (const [rotulo, valor] of [['Total', r.total], ['Faixa ativa', r.faixa_ativa], ['Área mapeada, sem faixa ativa', r.area_sem_faixa_ativa], ['Não avaliado', r.nao_avaliado]]) {
+            const linha = document.createElement('div');
+            linha.append(el('dt', rotulo), el('dd', valor));
+            dl.append(linha);
+          }
+          cartao.append(dl);
+          caixa.append(cartao);
+        }
+        $('caminho-teto').textContent = interp.mensagemTeto;
+        $('caminho-resultado').hidden = false;
+        desenharCaminho('curto');
+      }
+
+      function mostrarOpcoes(interp) {
+        const caixa = $('caminho-opcoes');
+        caixa.replaceChildren();
+        for (const lado of interp.lados) {
+          const grupo = el('div', null, 'caminho-lado');
+          grupo.append(el('p', `${lado.titulo}: escolha uma opção`));
+          for (const o of lado.opcoes) {
+            const b = el('button', o.rotulo, 'caminho-opcao');
+            b.type = 'button';
+            b.addEventListener('click', () => {
+              escolhas[lado.campo] = o.no;
+              enviarCaminho();
+            });
+            grupo.append(b);
+          }
+          if (lado.total > lado.opcoes.length) grupo.append(el('small', TEXTOS_ROTA.mais_opcoes));
+          caixa.append(grupo);
+        }
+        caixa.hidden = false;
+      }
+
+      async function enviarCaminho() {
+        const origem = $('caminho-origem').value;
+        const destino = $('caminho-destino').value;
+        const meu = ++pedidoCaminho;
+        limparCaminho();
+        $('caminho-opcoes').hidden = true;
+        if (consulta(origem) === null || consulta(destino) === null) return msgCaminho(TEXTOS_ROTA.curto); // sem pedido
+        msgCaminho('Calculando…');
+        let interp;
+        let corpo = null;
+        const ctrl = new AbortController();
+        const t = setTimeout(() => ctrl.abort(), 45000); // o Render gratuito pode estar acordando
+        try {
+          const res = await fetch(urlRota(base, origem, destino, escolhas.origem, escolhas.destino), { signal: ctrl.signal });
+          corpo = await res.json().catch(() => null);
+          interp = interpretarRota(res.status, corpo);
+        } catch (e) {
+          console.warn('[caminho] indisponível:', e);
+          interp = interpretarRota(0, null);
+        } finally {
+          clearTimeout(t);
+        }
+        if (meu !== pedidoCaminho) return;
+        if (interp.tipo === 'ambiguo') {
+          msgCaminho(interp.mensagem);
+          return mostrarOpcoes(interp);
+        }
+        if (interp.tipo !== 'ok') return msgCaminho(interp.mensagem);
+        msgCaminho('');
+        try {
+          const L = await carregarLeaflet();
+          if (meu !== pedidoCaminho) return;
+          // O caminho livre usa o mesmo mapa; o trajeto fixo sai de cena até o usuário escolher um de novo.
+          $('mapa-aviso').hidden = true;
+          $('mapa-trajeto').hidden = false;
+          criarMapa(L);
+          if (camada) camada.remove();
+          camada = null;
+          trechos = null;
+          $('mapa-totais').hidden = true;
+          $('mapa-rua-msg').textContent = '';
+        } catch (e) {
+          console.warn('[caminho] mapa indisponível; só os números:', e); // os totais aparecem mesmo sem mapa
+        }
+        mostrarComparacao(corpo, interp);
+      }
+
+      $('caminho-form').addEventListener('submit', (e) => {
+        e.preventDefault();
+        enviarCaminho();
+      });
+      for (const id of ['caminho-origem', 'caminho-destino']) {
+        $(id).addEventListener('input', () => {
+          escolhas = { origem: null, destino: null }; // texto novo invalida a opção escolhida antes
+          $('caminho-opcoes').hidden = true;
+        });
+      }
+      for (const k of Object.keys(CAMINHOS)) {
+        $(`caminho-ver-${k}`).addEventListener('click', () => ultimo && desenharCaminho(k));
+      }
+      $('caminho-voltar').addEventListener('click', () => mostrar($('mapa-seletor').value));
 
       painel.addEventListener('toggle', () => {
         if (!painel.open) return;

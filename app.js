@@ -412,7 +412,7 @@
         // Informativo. Não há comparação com a maré: o referencial vertical das curvas não está confirmado
         // e a precisão é de ~1 m, maior que a diferença entre os gatilhos.
         const alt = document.createElement('small');
-        alt.textContent = `Altitude aproximada da via: ${r.cmin.toFixed(1)} a ${r.cmax.toFixed(1)} m (curvas de nível da Prefeitura, margem de cerca de 1 m). Não compare com a altura da maré: o referencial vertical não está confirmado.`;
+        alt.textContent = `${RUAS.formatarAltitude(r.cmin, r.cmax)} (curvas de nível da Prefeitura, margem de cerca de 1 m). Não compare com a altura da maré: o referencial vertical não está confirmado.`;
         card.append(alt);
       }
       card.append(blocoEntorno(r, r.nome));

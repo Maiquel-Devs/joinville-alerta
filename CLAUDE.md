@@ -9,7 +9,7 @@ Projeto acadêmico e comunitário (Univille). **Revisado em 29/10/2026 (v3):** a
 App gratuito, que funciona offline, que mostra o **risco de alagar por rua** em Joinville/SC. O sistema não observa nada na rua: ele **infere** risco a partir de maré e chuva e das manchas oficiais do PDDU.
 
 - **Dentro do escopo:** diagnóstico por endereço ou GPS; risco por trecho de rua, derivado das manchas do PDDU; aviso geral de chuva/maré; texto de alerta fixo e revisável; custo de infraestrutura R$ 0,00.
-- **Fora do escopo (futuro):** alagamento *confirmado* (relato do cidadão, pluviômetros), notificações push, rota "mais segura".
+- **Fora do escopo (futuro):** alagamento *confirmado* (relato do cidadão, pluviômetros), notificações push.
 
 ## Por que o app ficava quase todo vermelho (medido em 29/10/2026)
 
@@ -54,7 +54,7 @@ O cartão `#resultado` traz: situação da via (🔴 faixa ativa com o cenário,
 
 **Integridade dos dados (o que o app não pode fazer):**
 - Nunca simular severidade por proximidade, por cota estimada ou por palpite. Sem 🟡/🟢 por proximidade.
-- Nunca sugerir rota ou direção "mais segura".
+- O app mostra exposição às áreas de risco mapeadas pelo PDDU. Pode sugerir o caminho de menor exposição, nunca dizer que ele é seguro.
 - O entorno só lista ruas das áreas mapeadas, e o cartão diz isso.
 - A transparência sobre o que é mapeado pelo PDDU e o que está fora é obrigatória.
 
@@ -184,10 +184,11 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | **Render acordado** | Usar ping gratuito a cada ~10 min (tarefa 9.3) e documentar o comportamento sem ele | 29/10/2026 |
 | **Mapa de trajetos fixos no app** | Mapa de trajetos fixos no app (06/11/2026): substitui 'sem mapa na interface' (12/10/2026). Trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. | 06/11/2026 |
 | **Trajetos fixos: faixa indisponível** | Trajetos fixos: se qualquer faixa estiver indisponível ou o cache estiver vazio, o back-end devolve 'indisponivel' e não classifica trechos. 'Nenhuma faixa ativa' só vale com todas as faixas com dado. | 06/11/2026 |
-| **Busca por rua no mapa** | _Substituída em 07/11/2026 pela linha "Trecho entre duas ruas no mapa" (abaixo)._ Busca por rua no mapa: a rua digitada só é destacada se fizer parte de um trajeto fixo. Ruas fora dos trajetos não aparecem e não geram rota. | 07/11/2026 |
-| **Trecho entre duas ruas no mapa** | Mapa de trajetos: o usuário informa a rua de início e a de destino dentro de um trajeto fixo. O app destaca o pedaço do trajeto entre elas, na ordem do trajeto. Não calcula rota nem aceita destino livre. | 07/11/2026 |
-| **VERSAO do sw.js** | Toda mudança em arquivos do front sobe a VERSAO do sw.js, para o navegador baixar a versão nova. | 07/11/2026 |
-| **Fundo do mapa** | Fundo do mapa: OpenFreeMap (sem chave, gratuito, atribuição obrigatória). Substitui o CARTO, que passou a exigir chave em 07/11/2026. | 07/11/2026 |
+| **Busca por rua no mapa** | _Substituída em 07/11/2026 pela linha "Trecho entre duas ruas no mapa" (abaixo)._ Busca por rua no mapa: a rua digitada só é destacada se fizer parte de um trajeto fixo. Ruas fora dos trajetos não aparecem no mapa de trajetos fixos. | 07/11/2026 |
+| **Trecho entre duas ruas no mapa** | Mapa de trajetos: o usuário informa a rua de início e a de destino dentro de um trajeto fixo. O app destaca o pedaço do trajeto entre elas, na ordem do trajeto. Esse destaque só escolhe trechos já existentes do trajeto, sem calcular caminho; o cálculo entre duas ruas quaisquer é o "Caminho livre" (linha abaixo). | 07/11/2026 |
+| **VERSAO do sw.js** | Toda mudança em arquivos do front sobe a VERSAO do sw.js, para o navegador baixar a versão nova. | 07/11/2026; regra reafirmada 12/11/2026 |
+| **Fundo do mapa** | Fundo do mapa: OpenFreeMap (sem chave, gratuito, atribuição obrigatória). Substitui o CARTO, que passou a exigir chave em 07/11/2026. | 07/11/2026; decisão datada 12/11/2026 |
+| **Caminho livre** | Painel dentro do mapa: o usuário informa rua de origem e de destino (3+ letras) e o back-end (`GET /api/v1/rota`) devolve o caminho mais curto e o de menor exposição às faixas do PDDU, com km por classe. O app mostra exposição às áreas de risco mapeadas pelo PDDU. Pode sugerir o caminho de menor exposição, nunca dizer que ele é seguro. Nome ambíguo: o app lista as opções e o usuário escolhe. Se o de menor exposição ficar mais de 20% mais longo, mostra o mais curto e avisa. Dado vencido: indisponível. Textos sem "seguro", "mancha" nem "rota". | 12/11/2026 |
 | Fonte da maré, referencial vertical, significado de 1,6 m, limiar pluvial | _a preencher (0.7); a Etapa 6 fornece os números_ | |
 
 ## Dados de terceiros (joinville_meteo)
