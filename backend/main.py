@@ -66,6 +66,11 @@ def get_rota(origem: str, destino: str, origem_no: int | None = None, destino_no
     Métrica de exposição, não recomendação. Sem texto para o usuário: o front monta os textos.
     origem_no / destino_no (opcionais): nó escolhido pelo usuário entre as opções de um resultado
     "ambiguo". Sem eles, nome ambíguo devolve as opções e não calcula.
+
+    Status do corpo (HTTP 200): "ok" (os dois caminhos), "ambiguo" (opções de um lado ou dos dois; não calcula),
+    "nao_encontrado" (nenhuma rua da malha casa com o texto de um dos lados; não significa ausência de risco),
+    "indisponivel" (sem dado de maré e chuva válido) e "sem_caminho" (as ruas não se ligam na malha).
+    HTTP 400: texto com menos de 3 letras ou nó inexistente; HTTP 503: grafo indisponível.
     """
     for campo, texto in (("origem", origem), ("destino", destino)):
         if rota_exposicao.consulta(texto) is None:

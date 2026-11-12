@@ -254,6 +254,19 @@ def test_endpoint_ok_com_os_dois_caminhos(monkeypatch):
         assert r["gerado_em"] == _status(mare_1_6=True)["gerado_em"]
 
 
+def test_endpoint_nao_encontrado_nao_calcula(monkeypatch):
+    with _cliente(monkeypatch, Rede(_nos(), _arestas())) as c:
+        monkeypatch.setattr(cache_store, "_ultimo", _status(mare_1_6=True))
+        for params, lado_vazio in (({"origem": "Rua Inexistente", "destino": "Rua Curta"}, "origem"),
+                                   ({"origem": "Rua Curta", "destino": "Rua Inexistente"}, "destino")):
+            r = c.get("/api/v1/rota", params=params)
+            assert r.status_code == 200
+            corpo = r.json()
+            assert corpo["status"] == "nao_encontrado"
+            assert corpo[lado_vazio]["total_opcoes"] == 0 and corpo[lado_vazio]["opcoes"] == []
+            assert "caminho_curto" not in corpo and "caminho_exposicao" not in corpo
+
+
 def test_endpoint_indisponivel_ou_vencido_nao_calcula(monkeypatch):
     with _cliente(monkeypatch, _vias()) as c:
         for estado in ({"status": "indisponivel", "gerado_em": None, "faixas": {}}, _status(121)):
