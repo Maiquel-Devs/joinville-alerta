@@ -160,13 +160,6 @@ test('achar: ignora acento e caixa, exige 3 letras, nome exato antes de "contém
   assert.deepStrictEqual(RUAS.achar(indice, 'zzzzqq'), []);
 });
 
-test('filtrarRuasDaFaixa: busca no rótulo da faixa mostra todas; senão filtra por nome', () => {
-  const ruas = [{ chave: 'rua a' }, { chave: 'rua b' }];
-  assert.strictEqual(RUAS.filtrarRuasDaFaixa(ruas, 'Maré — Cachoeira', ''), ruas);
-  assert.strictEqual(RUAS.filtrarRuasDaFaixa(ruas, 'Maré — Cachoeira', 'mare'), ruas);
-  assert.deepStrictEqual(RUAS.filtrarRuasDaFaixa(ruas, 'Maré — Cachoeira', 'rua b'), [{ chave: 'rua b' }]);
-});
-
 test('filtroDe: só Vila Nova tem filtro, e só o cenário Atual do TR da faixa', () => {
   assert.strictEqual(RUAS.filtroDe('mare_1_6'), undefined);
   const f = RUAS.filtroDe('pluvial_vn_tr10');

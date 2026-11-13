@@ -163,44 +163,7 @@ header p { font-size: 0.8rem; color: var(--text-muted); }
 .resultado ul { margin: 6px 0 6px 18px; }
 .resultado small { display: block; color: var(--text-muted); font-size: 0.75rem; }
 
-/* Lista viva: pior primeiro */
-.lista, .cartoes { list-style: none; }
-.familia { margin-bottom: 16px; }
-.familia > h3 { font-size: 1.05rem; color: var(--text-primary); }
 .resumo { color: var(--text-muted); font-size: 0.85rem; margin: 6px 0; }
-.cartao {
-  background: var(--card-bg);
-  border: 1px solid var(--border-color);
-  border-left: 6px solid var(--border-color);
-  border-radius: 6px;
-  padding: 12px;
-  margin-bottom: 8px;
-}
-.cartao h4 { font-size: 1rem; }
-.cartao .estado { font-size: 0.85rem; color: var(--text-muted); margin-bottom: 6px; }
-.cartao.ativa { border-left-color: var(--nivel-alto); background: #3b1d1d; border-color: #7f1d1d; }
-.cartao.ativa h4 { font-size: 1.1rem; }
-.cartao.ativa .estado { color: #fecaca; font-weight: 700; }
-.cartao.ativa.antigo { opacity: 0.65; }
-.cartao.indisponivel { border-left-color: var(--nivel-indisponivel); border-style: dashed; }
-.cartao.inativa { border-left-color: #475569; }
-.cartao summary { cursor: pointer; font-size: 0.88rem; padding: 6px 0; }
-.cartao .ruas { list-style: none; font-size: 0.88rem; columns: 1; margin-top: 4px; }
-.cartao .ruas li { padding: 3px 0; border-top: 1px solid var(--border-color); }
-.cartao .mais {
-  display: block;
-  width: 100%;
-  margin-top: 8px;
-  padding: 12px;
-  font-weight: 600;
-  text-align: center;
-  background: transparent;
-  color: #38bdf8;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
-  cursor: pointer;
-}
-
 footer {
   font-size: 0.78rem;
   color: var(--text-muted);
@@ -210,12 +173,6 @@ footer {
 }
 footer p { margin-bottom: 6px; }
 footer strong { color: var(--text-primary); }
-
-/* Rua: nome à esquerda, marca só quando a faixa está ativa */
-.cartao .ruas li { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 10px 12px; min-height: 44px; }
-.nome-rua { flex: 1 1 0; min-width: 0; overflow-wrap: anywhere; word-break: break-word; font-weight: 500; }
-.tag { flex: none; white-space: nowrap; font-size: 0.72rem; font-weight: 600; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--border-color); color: var(--text-muted); }
-.tag.ativa { background: #7f1d1d; border-color: #fca5a5; color: #fee2e2; }
 
 /* Diagnóstico por endereço + entorno */
 .chamada { font-size: 1.05rem; margin-bottom: 8px; }
@@ -235,13 +192,10 @@ footer strong { color: var(--text-primary); }
 .entorno li { padding: 6px 0; border-top: 1px solid var(--border-color); overflow-wrap: anywhere; }
 .entorno small, .diagnostico small { display: block; margin-top: 6px; color: var(--text-muted); font-size: 0.75rem; }
 .emergencia { margin-top: 12px; font-size: 0.85rem; }
-.lista-geral { margin: 12px 0; }
-.lista-geral > summary { cursor: pointer; padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px; }
 
-/* Mapa de trajetos fixos */
+/* Mapa e caminho livre */
 .painel-mapa { margin: 12px 0; }
 .painel-mapa > summary { cursor: pointer; padding: 10px 12px; color: var(--text-muted); font-size: 0.85rem; border: 1px dashed var(--border-color); border-radius: 6px; }
-.mapa-seletor { width: 100%; min-height: 44px; margin: 10px 0; padding: 8px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; }
 .mapa-campos { display: grid; gap: 4px; margin-bottom: 8px; }
 .mapa-campos label { font-size: 0.8rem; color: var(--text-muted); }
 .mapa-campo { width: 100%; min-height: 44px; padding: 8px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; }
@@ -249,7 +203,8 @@ footer strong { color: var(--text-primary); }
 .mapa-rua-msg { font-size: 0.85rem; color: var(--text-muted); margin: 0 0 10px; }
 .mapa-rua-msg:empty { display: none; }
 .mapa-trajeto { height: 320px; border-radius: 8px; margin-bottom: 10px; }
-.mapa-trajeto[hidden], .mapa-totais[hidden] { display: none; }
+.mapa-orienta { font-size: 0.85rem; color: var(--text-muted); margin: 8px 0; }
+.mapa-orienta[hidden] { display: none; }
 .mapa-legenda { list-style: none; font-size: 0.85rem; margin: 8px 0; }
 .mapa-legenda li { display: flex; align-items: center; gap: 8px; padding: 3px 0; }
 .mapa-legenda .amostra { flex: none; width: 28px; border-top: 4px solid; }
@@ -266,11 +221,10 @@ footer strong { color: var(--text-primary); }
 /* Caminho livre */
 .caminho-livre { margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border-color); }
 .caminho-livre h3 { font-size: 1rem; margin-bottom: 6px; }
-.caminho-botao, .caminho-voltar, .caminho-opcao { min-height: 44px; padding: 8px 12px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
+.caminho-botao, .caminho-opcao { min-height: 44px; padding: 8px 12px; background: var(--card-bg); color: var(--text-primary); border: 1px solid var(--border-color); border-radius: 6px; font-size: 0.9rem; cursor: pointer; }
 .caminho-botao[aria-pressed="true"] { border-color: #7dd3fc; outline: 2px solid #7dd3fc; outline-offset: -2px; font-weight: 700; }
 .caminho-ver { display: flex; gap: 8px; margin: 8px 0; }
 .caminho-ver .caminho-botao { flex: 1 1 0; }
-.caminho-voltar { width: 100%; margin: 4px 0 8px; color: var(--text-muted); }
 .caminho-comparacao { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .caminho-cartao { border: 1px solid var(--border-color); border-radius: 8px; padding: 8px; min-width: 0; }
 .caminho-cartao h4 { font-size: 0.9rem; margin-bottom: 4px; }

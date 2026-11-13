@@ -41,9 +41,9 @@ Causas, em ordem de peso:
 
 ## Regra de UX (inviolável)
 
-O uso principal é o **diagnóstico por endereço**: o cidadão informa a rua (ou usa o GPS) e recebe, em menos de 2 s, a situação dela, as ruas mapeadas ao redor (~300 m) e orientação preventiva. O mapa fica restrito a trajetos fixos pré-definidos, num painel recolhido (ver "Mapa de trajetos fixos no app (06/11/2026)" em "Decisões tomadas").
+O uso principal é o **diagnóstico por endereço**: o cidadão informa a rua (ou usa o GPS) e recebe, em menos de 2 s, a situação dela, as ruas mapeadas ao redor (~300 m) e orientação preventiva. O mapa mostra só o **Caminho livre** (dois caminhos entre duas ruas), num painel recolhido que abre vazio; os trajetos fixos foram removidos do front em 13/11/2026 (ver "Decisões tomadas").
 
-Ordem da tela: cabeçalho e avisos → cartão do nível do município e indicadores de chuva e maré → **aviso de atenção geral, se houver** → consulta individual (botão GPS, campo `#busca`, cartão `#resultado`) → lista geral recolhida → rodapé.
+Ordem da tela: cabeçalho e avisos → cartão do nível do município e indicadores de chuva e maré → **aviso de atenção geral, se houver** → consulta individual (botão GPS, campo `#busca`, cartão `#resultado`) → painel recolhido do Caminho livre → rodapé.
 
 O cartão `#resultado` traz: situação da via (🔴 faixa ativa com o cenário, ⚪ nenhuma faixa ativa, ⚪ indisponível), orientação preventiva geral, até 4 ruas mapeadas num raio de ~300 m e rodapé de emergência (Defesa Civil 199, Bombeiros 193, "fora das áreas mapeadas também pode alagar", "este app não substitui a Defesa Civil"). Rua não encontrada: dizer que isso **não** significa ausência de risco.
 
@@ -107,7 +107,7 @@ PDDU × OpenStreetMap ─► pipeline offline ─► data/*.geojson ─► Front
 - **Avisos gerais (sem pintar ruas):** `atencao_geral.chuva` liga com chuva de 24 h ≥ 53 mm (≈ 3 eventos por ano na Open-Meteo); `atencao_geral.mare` é `null` até a tarefa 6.5 (sem gatilho). Aninhamento: TR 25 ativa implica TR 10 e TR 5, porque os limiares são crescentes (98 < 110 < 125); o motor não tem regra à parte.
 - **Nível global** = pior entre faixas de rua ativas; sem faixa de rua ativa, `atencao_geral` se houver aviso geral; senão `nenhum`; `indisponivel` só se nada tem dado.
 - **Pipeline offline:** shapefiles do PDDU (SIRGAS 2000 UTM 22S) × ruas do OSM → `data/ruas_risco.geojson` com a faixa de menor TR por trecho; `cotas_ruas.py` acrescenta altitude só como informação.
-- **Front (PWA no GitHub Pages):** diagnóstico por endereço, aviso geral, lista geral recolhida. Service Worker cache-first. GPS testado contra as manchas (`pip.js`).
+- **Front (PWA no GitHub Pages):** diagnóstico por endereço, aviso geral, painel do Caminho livre com mapa. Service Worker cache-first. GPS testado contra as manchas (`pip.js`).
 
 ### Contrato da API — `/api/v1/status-geral` (v3, decidido; nomes dos níveis provisórios)
 
@@ -170,8 +170,8 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | Uso do conjunto joinville_meteo | CC BY 4.0 com atribuição, segundo o autor; termos da SEPROT a confirmar por e-mail | 23/10/2026 |
 | Trecho em mais de uma faixa | v2: pior faixa ativa. **v3: faixa de menor TR que contém o trecho** | 12/10/2026; v3: decidido 29/10/2026 |
 | Agrupamento da lista | Por faixa/área, sem bairro | 12/10/2026 |
-| Mapa Leaflet | Mapa Leaflet: substituída em 06/11/2026 pela decisão 'Mapa de trajetos fixos no app' (linha abaixo). Sem destino livre. | 06/11/2026 |
-| Interface principal | Diagnóstico por endereço + entorno ~300 m; lista geral recolhida | 23/10/2026 |
+| Mapa Leaflet | _Substituída em 06/11/2026 pelos trajetos fixos e, em 13/11/2026, pelo Caminho livre (linha "Caminho livre" abaixo)._ | 06/11/2026 |
+| Interface principal | Diagnóstico por endereço + entorno ~300 m; _lista geral por faixa removida em 13/11/2026_ | 23/10/2026 |
 | Rótulos das faixas de maré | "Maré — Bacia do Cachoeira / Cotas Intermediárias (1,6m)" e "Maré — Calha Baixa do Cachoeira e Estuário (2,5m)" (termos a conferir na cartilha) | 16/10/2026 |
 | Só a faixa ativa marca a rua; sem verde nem amarelo por proximidade | Mantido | 16/10/2026 |
 | **Remover o Mistral** | Texto por tabela fixa em `textos.py`. Motivo: o conjunto de textos é finito (nível × faixas ativas), a IA só reescreve esse texto, adiciona dependência, latência na coleta e um risco de texto não revisado num aviso público. Não é questão de dinheiro (o plano é gratuito), é complexidade e risco. | decidido 29/10/2026 |
@@ -182,10 +182,10 @@ Estes arquivos vieram de um script de uso único **ainda não versionado** (tare
 | **Alvos de frequência** | Faixa de rua ≈ 1/TR eventos por ano (TR 5 → 0,2; TR 10 → 0,1; TR 25 → 0,04); aviso geral entre 3 e 10 vezes por ano. Ajustáveis depois de ver a tabela da Etapa 6 | 29/10/2026 |
 | **Itaum** | Tratar como maré (padrão); conferir na cartilha. **Aplicado em 01/11/2026 (7.2):** `pluvial_itaum` saiu do pipeline; os trechos ficam em `mare_1_6`/`mare_2_5`. Evidência medida: 100,0% da área de Itaum (3,97 km²) está dentro das manchas de maré; cota mediana dos trechos 2,0 m, igual à da maré (Vila Nova: 8 m). Cartilha **não conferida** (sem acesso a ela nesta sessão); reverter só se disser que é chuva | 29/10/2026; aplicado 01/11/2026 |
 | **Render acordado** | Usar ping gratuito a cada ~10 min (tarefa 9.3) e documentar o comportamento sem ele | 29/10/2026 |
-| **Mapa de trajetos fixos no app** | Mapa de trajetos fixos no app (06/11/2026): substitui 'sem mapa na interface' (12/10/2026). Trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. | 06/11/2026 |
-| **Trajetos fixos: faixa indisponível** | Trajetos fixos: se qualquer faixa estiver indisponível ou o cache estiver vazio, o back-end devolve 'indisponivel' e não classifica trechos. 'Nenhuma faixa ativa' só vale com todas as faixas com dado. | 06/11/2026 |
+| **Mapa de trajetos fixos no app** | _Removido do front em 13/11/2026; o Caminho livre substitui o recurso._ Era: trajetos pré-definidos, sem destino livre; back-end classifica os trechos; front só desenha; métrica de exposição, não de segurança. Os endpoints `/api/v1/trajetos` e `data/trajetos` continuam por enquanto; a remoção deles fica para depois. | 06/11/2026; removido 13/11/2026 |
+| **Trajetos fixos: faixa indisponível** | _Sem uso no front desde 13/11/2026 (trajetos fixos removidos)._ Trajetos fixos: se qualquer faixa estiver indisponível ou o cache estiver vazio, o back-end devolve 'indisponivel' e não classifica trechos. 'Nenhuma faixa ativa' só vale com todas as faixas com dado. | 06/11/2026 |
 | **Busca por rua no mapa** | _Substituída em 07/11/2026 pela linha "Trecho entre duas ruas no mapa" (abaixo)._ Busca por rua no mapa: a rua digitada só é destacada se fizer parte de um trajeto fixo. Ruas fora dos trajetos não aparecem no mapa de trajetos fixos. | 07/11/2026 |
-| **Trecho entre duas ruas no mapa** | Mapa de trajetos: o usuário informa a rua de início e a de destino dentro de um trajeto fixo. O app destaca o pedaço do trajeto entre elas, na ordem do trajeto. Esse destaque só escolhe trechos já existentes do trajeto, sem calcular caminho; o cálculo entre duas ruas quaisquer é o "Caminho livre" (linha abaixo). | 07/11/2026 |
+| **Trecho entre duas ruas no mapa** | _Removido em 13/11/2026 junto com os trajetos fixos; o Caminho livre substitui o recurso._ Era: o usuário informava a rua de início e a de destino dentro de um trajeto fixo. O app destaca o pedaço do trajeto entre elas, na ordem do trajeto. Esse destaque só escolhe trechos já existentes do trajeto, sem calcular caminho; o cálculo entre duas ruas quaisquer é o "Caminho livre" (linha abaixo). | 07/11/2026 |
 | **VERSAO do sw.js** | Toda mudança em arquivos do front sobe a VERSAO do sw.js, para o navegador baixar a versão nova. | 07/11/2026; regra reafirmada 12/11/2026 |
 | **Fundo do mapa** | Fundo do mapa: OpenFreeMap (sem chave, gratuito, atribuição obrigatória). Substitui o CARTO, que passou a exigir chave em 07/11/2026. | 07/11/2026; decisão datada 12/11/2026 |
 | **Caminho livre** | Painel dentro do mapa: o usuário informa rua de origem e de destino (3+ letras) e o back-end (`GET /api/v1/rota`) devolve o caminho mais curto e o de menor exposição às faixas do PDDU, com km por classe. O app mostra exposição às áreas de risco mapeadas pelo PDDU. Pode sugerir o caminho de menor exposição, nunca dizer que ele é seguro. Nome ambíguo: o app lista as opções e o usuário escolhe. Se o de menor exposição ficar mais de 20% mais longo, mostra o mais curto e avisa. Dado vencido: indisponível. Textos sem "seguro", "mancha" nem "rota". | 12/11/2026 |

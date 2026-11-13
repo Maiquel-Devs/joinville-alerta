@@ -67,12 +67,6 @@
   // --- texto e filtros ---------------------------------------------------------------------------
   const semAcento = (s) => String(s).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 
-  // Filtro da lista geral: se a busca casa com o rótulo da faixa, mostra todas as ruas dela.
-  function filtrarRuasDaFaixa(ruas, rotulo, q) {
-    if (!q || semAcento(rotulo).includes(q)) return ruas;
-    return ruas.filter((r) => r.chave.includes(q));
-  }
-
   // --- geometria em metros (projeção equiretangular local) ---------------------------------------
   const LAT0 = -26.3; // centro de Joinville; sobre ~15 km o erro de escala é menor que 0,2%
   const LNG0 = -48.85;
@@ -226,7 +220,7 @@
 
   const api = {
     FAIXAS, FAMILIAS, CENARIO, RAIO_HOMONIMO_M,
-    filtroDe, cenariosDaVia, formatarAltitude, estadoDeFaixas, estadoDaRua, semAcento, filtrarRuasDaFaixa,
+    filtroDe, cenariosDaVia, formatarAltitude, estadoDeFaixas, estadoDaRua, semAcento,
     projetar, distPontoSegmento, distSegmentoSegmento, distLinhas,
     construirIndice, achar, refDoPonto, escolherGrupo, vizinhas,
   };

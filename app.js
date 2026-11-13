@@ -5,21 +5,18 @@
   const CHAVE_SALVO = 'ja2_ultimo_estado';
   const TIMEOUT_API_MS = 45000; // por tentativa; o Render gratuito hiberna e a primeira resposta é lenta
   const TENTATIVAS_API = 2; // a 2ª pega o servidor já acordado
-  const LIMITE_RUAS = 10; // ruas desenhadas por cartão antes de "mostrar todas"
 
   // Faixas, cenários, estado da rua, busca e entorno ficam em ruas.js (funções puras, testadas).
-  const { FAIXAS, FAMILIAS, filtroDe, semAcento } = RUAS;
+  const { FAIXAS, filtroDe, semAcento } = RUAS;
   const RUAS_ARQ = 'data/ruas_risco.geojson';
 
   // Rótulo curto do estado da faixa em cada rua (o front só repete o que o back-end decidiu).
-  const TAG_RUA_ATIVA = '🔴 Faixa ativa';
   const ROTULO_NIVEL = { atencao: 'atenção', indisponivel: 'indisponível' }; // provisório (CLAUDE.md: nomes dos níveis em aberto)
   const TEXTO_ESTADO = {
     ativa: 'Faixa ativa agora: risco de alagar',
     inativa: 'Nenhuma faixa ativa agora',
     indisponivel: 'Sem dado válido: estado indisponível',
   };
-  const ORDEM_ESTADO = { ativa: 0, indisponivel: 1, inativa: 2 };
 
   const $ = (id) => document.getElementById(id);
 
@@ -144,139 +141,14 @@
   }
 
   // --- lista viva ----------------------------------------------------------------------
-  const ruasPorFaixa = {}; // id -> [{nome, chave, m}] em ordem alfabética
   let indice = null; // ruas.js: grupos de ruas (homônimos separados por distância)
   let ruasCarregadas = false;
   let ruasFalhou = false;
   let busca = '';
-  const aberto = new Map(); // id -> escolha do usuário (aberto/fechado)
-  const expandidas = new Set(); // ids de faixa em que o usuário pediu a lista completa
 
   function indexarRuas(colecao) {
-    const mapa = Object.fromEntries(FAIXAS.map((f) => [f.id, new Map()]));
-    for (const feat of colecao.features) {
-      const { nome, faixas, m } = feat.properties;
-      if (!nome) continue;
-      for (const id of faixas) mapa[id]?.set(nome, (mapa[id].get(nome) || 0) + m);
-    }
-    for (const f of FAIXAS) {
-      ruasPorFaixa[f.id] = [...mapa[f.id]]
-        .map(([nome, m]) => ({ nome, chave: semAcento(nome), m }))
-        .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
-    }
     indice = RUAS.construirIndice(colecao);
     ruasCarregadas = true;
-  }
-
-  function criarCartao(f, ruas, total) {
-    const e = estadoDeFaixas([f.id]);
-    const li = document.createElement('li');
-    li.className = `cartao ${e}${e === 'ativa' && dadoAntigo() ? ' antigo' : ''}`;
-
-    const h = document.createElement('h4');
-    h.textContent = f.curto;
-    const est = document.createElement('p');
-    est.className = 'estado';
-    est.textContent = TEXTO_ESTADO[e];
-    li.append(h, est);
-
-    if (!ruasCarregadas) {
-      const p = document.createElement('p');
-      p.className = 'resumo';
-      p.textContent = ruasFalhou ? 'Lista de ruas indisponível agora. O estado desta faixa continua valendo.' : 'Carregando ruas...';
-      li.append(p);
-      return li;
-    }
-
-    const det = document.createElement('details');
-    det.open = busca ? true : aberto.get(f.id) ?? e === 'ativa'; // só a faixa ativa abre sozinha
-    const sum = document.createElement('summary');
-    const parcial = !busca && !expandidas.has(f.id) && ruas.length > LIMITE_RUAS;
-    const afetadas = e === 'ativa' ? 'ruas com risco de alagar agora' : 'ruas mapeadas';
-    sum.textContent = busca
-      ? `${ruas.length} de ${total} ruas`
-      : parcial
-        ? `${total} ${afetadas}: mostrando as ${LIMITE_RUAS} de maior trecho`
-        : `${total} ${afetadas}, das de maior trecho para as de menor`;
-    const ul = document.createElement('ul');
-    ul.className = 'ruas';
-    det.append(sum, ul);
-    det.addEventListener('toggle', () => {
-      if (!busca) aberto.set(f.id, det.open);
-    });
-
-    // Com busca ativa o resultado já é curto e filtrado: mostra tudo.
-    const ate = busca || expandidas.has(f.id) ? ruas.length : LIMITE_RUAS;
-    // Sem busca: ordena pelo comprimento do trecho dentro da área mapeada (único dado por rua; não é severidade).
-    const ordenadas = busca ? ruas : [...ruas].sort((a, b) => b.m - a.m);
-    for (const r of ordenadas.slice(0, ate)) {
-      const item = document.createElement('li');
-      const nome = document.createElement('span');
-      nome.className = 'nome-rua';
-      nome.textContent = r.nome;
-      item.append(nome);
-      if (e === 'ativa') {
-        // Só a faixa ativa marca a rua; o estado das demais já está no cabeçalho do cartão.
-        const tag = document.createElement('span');
-        tag.className = 'tag ativa';
-        tag.textContent = TAG_RUA_ATIVA;
-        item.append(tag);
-      }
-      ul.append(item);
-    }
-    if (ruas.length > ate) {
-      const mais = document.createElement('button');
-      mais.type = 'button';
-      mais.className = 'mais';
-      mais.textContent = `Mostrar todas as ${ruas.length} ruas desta área`;
-      mais.addEventListener('click', () => {
-        expandidas.add(f.id);
-        renderLista();
-      });
-      det.append(mais);
-    }
-    if (!ruas.length) {
-      const vazio = document.createElement('p');
-      vazio.className = 'resumo';
-      vazio.textContent = 'Nenhuma rua encontrada nesta área.';
-      det.append(vazio);
-    }
-    li.append(det);
-    return li;
-  }
-
-  function renderLista() {
-    const q = semAcento(busca.trim());
-    // Famílias com faixa ativa primeiro, depois indisponível, depois o resto; dentro da família, do cenário mais frequente ao mais raro.
-    const pior = (fam) => Math.min(...fam.faixas.map((id) => ORDEM_ESTADO[estadoDeFaixas([id])]));
-    const familias = FAMILIAS.map((fam, i) => ({ fam, i, p: pior(fam) })).sort((a, b) => a.p - b.p || a.i - b.i);
-
-    const grupos = [];
-    for (const { fam } of familias) {
-      const cartoes = [];
-      for (const id of fam.faixas) {
-        const f = FAIXAS.find((x) => x.id === id);
-        const todas = ruasPorFaixa[id] || [];
-        const ruas = RUAS.filtrarRuasDaFaixa(todas, f.rotulo, q);
-        if (q && !ruas.length) continue;
-        cartoes.push(criarCartao(f, ruas, todas.length));
-      }
-      if (!cartoes.length) continue;
-      const li = document.createElement('li');
-      li.className = 'familia';
-      const h = document.createElement('h3');
-      h.textContent = fam.rotulo;
-      const ex = document.createElement('p');
-      ex.className = 'resumo';
-      ex.textContent = fam.explica;
-      const ul = document.createElement('ul');
-      ul.className = 'cartoes';
-      ul.append(...cartoes);
-      li.append(h, ex, ul);
-      grupos.push(li);
-    }
-    $('lista').replaceChildren(...grupos);
-    $('sem-resultado').hidden = grupos.length > 0;
   }
 
   // --- localização (ponto-em-polígono sobre as manchas) -------------------------------
@@ -357,9 +229,6 @@
   function mostrarDiagnostico(texto) {
     const caixa = $('resultado');
     const ativa = texto.trim().length >= 3;
-    // Com busca ativa o foco é só o diagnóstico: lista geral oculta. Ao limpar a busca, volta fechada.
-    $('lista-geral').hidden = ativa;
-    $('lista-geral').open = false;
     if (!ativa) {
       caixa.hidden = true;
       return;
@@ -476,7 +345,6 @@
           const { latitude: lat, longitude: lng, accuracy } = pos.coords;
           const dentro = FAIXAS.filter((f) => PIP.pontoNaColecao(manchas[f.id], lng, lat, filtroDe(f.id)));
           ultimaPosicao = [lng, lat];
-          $('lista-geral').open = false;
           mostrarResultado(dentro, accuracy, [lng, lat]);
         } catch (e) {
           console.warn('Falha ao carregar as manchas:', e);
@@ -496,20 +364,17 @@
   // --- início --------------------------------------------------------------------------
   function renderTudo() {
     renderPainel();
-    renderLista();
   }
 
-  MAPA.init({ base: API.replace('/status-geral', '') }); // mapa de trajetos fixos (mapa.js); a base vem da constante da API
+  MAPA.init({ base: API.replace('/status-geral', '') }); // caminho livre e mapa (mapa.js); a base vem da constante da API
   $('btn-location').addEventListener('click', usarGps);
   $('busca').addEventListener('input', (e) => {
     busca = e.target.value;
-    renderLista();
     mostrarDiagnostico(busca);
   });
 
   (async () => {
     // Cache primeiro: mostra já o último estado salvo, depois atualiza pela rede.
-    $('lista-geral').open = false; // tela inicial limpa: a lista geral sempre começa recolhida
     const salvo = lerSalvo();
     if (salvo) estado = { dados: salvo, origem: 'salvo' };
     renderTudo();
@@ -530,7 +395,6 @@
         ruasFalhou = true;
         $('aviso-ruas').hidden = false;
       }
-      renderLista();
     };
     const ruasP = carregarRuas();
     window.addEventListener('online', () => {
