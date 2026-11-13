@@ -204,7 +204,8 @@
     const linhas = [`${o.nome}, ${n}, ${Number(o.km).toFixed(1).replace('.', ',')} km`];
     const ini = o.cruza_inicio ?? null;
     const fim = o.cruza_fim ?? null;
-    if (ini && fim) linhas.push(`entre ${ini} e ${fim}`);
+    if (!ini && !fim) linhas.push('sem cruzamento nomeado');
+    else if (ini && fim) linhas.push(`entre ${ini} e ${fim}`);
     else if (ini) linhas.push(`de ${ini} até o fim da via`);
     else if (fim) linhas.push(`do fim da via até ${fim}`);
     return linhas.join('\n');
@@ -223,14 +224,15 @@
 
   const MAX_OPCOES_VISIVEIS = 5;
 
-  // Opções com rótulo; se duas ficarem com o texto completo igual, a posição entre as iguais entra como última linha.
+  // Opções com rótulo; se duas tiverem o mesmo título (1ª linha), a posição entre elas entra como última linha.
   function rotularOpcoes(lista) {
     const rotulos = lista.map(rotuloOpcao);
+    const titulos = rotulos.map((r) => r.split('\n')[0]);
     const visto = {};
     return lista.map((o, i) => {
-      const iguais = rotulos.filter((r) => r === rotulos[i]).length;
-      visto[rotulos[i]] = (visto[rotulos[i]] ?? 0) + 1;
-      return { rotulo: iguais > 1 ? `${rotulos[i]}\n${visto[rotulos[i]]}ª opção` : rotulos[i], no: o.no };
+      const iguais = titulos.filter((t) => t === titulos[i]).length;
+      visto[titulos[i]] = (visto[titulos[i]] ?? 0) + 1;
+      return { rotulo: iguais > 1 ? `${rotulos[i]}\n${visto[titulos[i]]}ª opção` : rotulos[i], no: o.no };
     });
   }
 
