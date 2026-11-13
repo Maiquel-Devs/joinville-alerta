@@ -59,7 +59,7 @@ test('rótulos das classes são os da legenda do index.html', () => {
 });
 
 // --- caminho livre, textos e altitude (12/11/2026) ---------------------------------------------------
-const { urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
+const { marcadoresInicioFim, COR_INICIO, COR_FIM, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
 const RUAS = require('../ruas.js');
 const PROIBIDAS = /segur|mancha|caminho até|\brota\b/i;
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
@@ -178,4 +178,22 @@ test('não há mais seletor de trajeto nem bloco de vias por faixa no index.html
   assert.ok(!html.includes('Ver todas as vias'));
   assert.ok(textoVisivel.includes('Digite duas ruas para ver os caminhos.'));
   assert.ok(html.includes('id="mapa-trajeto"') && !/id="mapa-trajeto"[^>]*hidden/.test(html), 'o mapa fica visível, vazio');
+});
+
+test('marcadoresInicioFim: dois pontos com as coordenadas certas, rótulos e cores fora das classes de risco', () => {
+  const m = marcadoresInicioFim({ status: 'ok', origem: { lat: -26.3, lon: -48.84, no: 1 }, destino: { lat: -26.31, lon: -48.83, no: 2 } });
+  assert.deepEqual(m, [
+    { lat: -26.3, lng: -48.84, rotulo: 'Início', cor: '#1d4ed8' },
+    { lat: -26.31, lng: -48.83, rotulo: 'Fim', cor: '#7c3aed' },
+  ]);
+  for (const cor of [COR_INICIO, COR_FIM]) assert.ok(!['#ef4444', '#eab308'].includes(cor));
+  assert.ok(html.includes(COR_INICIO) || fs.readFileSync(path.join(__dirname, '..', 'style.css'), 'utf8').includes(COR_INICIO));
+});
+
+test('marcadoresInicioFim: sem coordenadas não cria marcador; textos sem palavras vetadas', () => {
+  assert.deepEqual(marcadoresInicioFim({ origem: { no: 1 }, destino: { lat: null, lon: null } }), []);
+  assert.deepEqual(marcadoresInicioFim(null), []);
+  assert.equal(marcadoresInicioFim({ origem: { lat: -26.3, lon: -48.8 } }).length, 1);
+  assert.ok(textoVisivel.includes('Início e fim do caminho'));
+  assert.ok(!PROIBIDAS.test('Início e fim do caminho'));
 });

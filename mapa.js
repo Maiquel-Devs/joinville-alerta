@@ -65,6 +65,16 @@
     return { ...(ESTILOS[classe] ?? ESTILOS.nao_avaliado) };
   }
 
+  // Marcadores de início e fim: cores fora das classes de risco (nada de vermelho nem âmbar).
+  const COR_INICIO = '#1d4ed8';
+  const COR_FIM = '#7c3aed';
+
+  // Dois pontos { lat, lng, rotulo, cor } a partir de origem/destino da resposta ok; ponto sem coordenadas não gera marcador.
+  function marcadoresInicioFim(corpo) {
+    const ponto = (p, rotulo, cor) => (Number.isFinite(p?.lat) && Number.isFinite(p?.lon) ? [{ lat: p.lat, lng: p.lon, rotulo, cor }] : []);
+    return [...ponto(corpo?.origem, 'Início', COR_INICIO), ...ponto(corpo?.destino, 'Fim', COR_FIM)];
+  }
+
   // 3,992 -> "3,99 km"
   function formatarKm(km) {
     return `${Number(km).toFixed(2).replace('.', ',')} km`;
@@ -163,7 +173,7 @@
     }
   }
 
-  const api = { estiloDoTrecho, formatarKm, consulta, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
+  const api = { estiloDoTrecho, formatarKm, marcadoresInicioFim, COR_INICIO, COR_FIM, consulta, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
 
   // --- só no navegador -------------------------------------------------------------------
   if (typeof document !== 'undefined') {
@@ -226,10 +236,12 @@
             console.warn('[mapa] fundo OpenFreeMap indisponível; mostrando só os trechos:', e);
           }
         }
+        mapa.createPane('marcadores').style.zIndex = 650; // acima da linha do caminho
       }
 
       // --- caminho livre ---------------------------------------------------------------------------
       let camadaCaminho = null; // caminho desenhado agora
+      let camadaMarcadores = null; // bolinhas de início e fim
       let ultimo = null; // resposta ok em exibição: { corpo, qual }
       let escolhas = { origem: null, destino: null }; // nós escolhidos entre opções ambíguas
       let pedidoCaminho = 0;
@@ -239,6 +251,8 @@
       function limparCaminho() {
         if (camadaCaminho) camadaCaminho.remove();
         camadaCaminho = null;
+        if (camadaMarcadores) camadaMarcadores.remove();
+        camadaMarcadores = null;
         ultimo = null;
         $('caminho-resultado').hidden = true;
         $('mapa-orienta').hidden = false;
@@ -259,6 +273,17 @@
         camadaCaminho = raiz.L.geoJSON(ultimo.corpo[CAMINHOS[qual]].trechos, { style: (f) => estiloDoTrecho(f.properties.classe) }).addTo(mapa);
         mapa.invalidateSize();
         mapa.fitBounds(camadaCaminho.getBounds(), { padding: [20, 20] });
+      }
+
+      function desenharMarcadores(corpo) {
+        if (camadaMarcadores) camadaMarcadores.remove();
+        camadaMarcadores = null;
+        if (!mapa) return;
+        camadaMarcadores = raiz.L.layerGroup(
+          marcadoresInicioFim(corpo).map((p) =>
+            raiz.L.circleMarker([p.lat, p.lng], { pane: 'marcadores', radius: 8, color: '#ffffff', weight: 2, fillColor: p.cor, fillOpacity: 1 })
+              .bindTooltip(p.rotulo, { permanent: true, direction: 'top', offset: [0, -6], className: 'marcador-rotulo' })),
+        ).addTo(mapa);
       }
 
       function mostrarComparacao(corpo, interp) {
@@ -282,6 +307,7 @@
         $('caminho-resultado').hidden = false;
         $('mapa-orienta').hidden = true;
         desenharCaminho('curto');
+        desenharMarcadores(corpo);
       }
 
       function mostrarOpcoes(interp) {
