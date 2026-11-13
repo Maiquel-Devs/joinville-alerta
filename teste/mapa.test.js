@@ -261,7 +261,7 @@ test('rótulos das classes são os da legenda do index.html', () => {
 });
 
 // --- caminho livre, textos e altitude (12/11/2026) ---------------------------------------------------
-const { urlRota, resumoCaminho, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
+const { urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
 const RUAS = require('../ruas.js');
 const PROIBIDAS = /segur|mancha|caminho até|\brota\b/i;
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
@@ -300,12 +300,28 @@ test('interpretarRota: ambíguo lista só os lados ambíguos, com rótulo e nó,
   const r = interpretarRota(200, {
     status: 'ambiguo',
     origem: lado(false, [{ rotulo: null, no: 1 }]),
-    destino: lado(true, [{ rotulo: 'Rua Aubé (3 trechos)', no: 10 }, { rotulo: 'Rua Aubé (1 trechos)', no: 11 }]),
+    destino: lado(true, [{ nome: 'Rua Aubé', trechos: 3, km: 0.94, no: 10 }, { nome: 'Rua Aubé', trechos: 1, km: 0.3, no: 11 }]),
   });
   assert.equal(r.tipo, 'ambiguo');
   assert.equal(r.lados.length, 1);
   assert.equal(r.lados[0].campo, 'destino');
-  assert.deepEqual(r.lados[0].opcoes, [{ rotulo: 'Rua Aubé (3 trechos)', no: 10 }, { rotulo: 'Rua Aubé (1 trechos)', no: 11 }]);
+  assert.deepEqual(r.lados[0].opcoes, [{ rotulo: 'Rua Aubé — 3 trechos, 0,9 km', no: 10 }, { rotulo: 'Rua Aubé — 1 trecho, 0,3 km', no: 11 }]);
+});
+
+test('rotuloOpcao: "26 trechos, 3,1 km", sem risco e sem palavras vetadas', () => {
+  assert.equal(rotuloOpcao({ nome: 'Avenida Santos Dumont', trechos: 26, km: 3.1, no: 1 }), 'Avenida Santos Dumont — 26 trechos, 3,1 km');
+  assert.equal(rotuloOpcao({ nome: 'Rua A', trechos: 2, km: 3, no: 1 }), 'Rua A — 2 trechos, 3,0 km');
+  assert.ok(!PROIBIDAS.test(rotuloOpcao({ nome: 'Rua A', trechos: 2, km: 3, no: 1 })));
+});
+
+test('interpretarRota: opções iguais em nome, trechos e km ficam só com o nome; no máximo 5 visíveis', () => {
+  const o = (no) => ({ nome: 'Rua B', trechos: 2, km: 0.5, no });
+  const r = interpretarRota(200, { status: 'ambiguo', origem: lado(true, [o(1), o(2)]), destino: lado(false) });
+  assert.deepEqual(r.lados[0].opcoes.map((x) => x.rotulo), ['Rua B', 'Rua B']);
+  const sete = Array.from({ length: 7 }, (_, i) => ({ nome: 'Rua C', trechos: 9 - i, km: 1, no: i }));
+  const r2 = interpretarRota(200, { status: 'ambiguo', origem: { ambiguo: true, total_opcoes: 7, opcoes: sete }, destino: lado(false) });
+  assert.equal(r2.lados[0].opcoes.length, 5);
+  assert.equal(r2.lados[0].total, 7);
 });
 
 test('interpretarRota: demais status e HTTP 400 têm o texto pedido', () => {

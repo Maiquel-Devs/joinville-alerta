@@ -278,5 +278,5 @@ footer strong { color: var(--text-primary); }
 .caminho-cartao .mapa-totais div { flex-direction: column; gap: 0; }
 .caminho-lado { margin: 8px 0; display: grid; gap: 6px; }
 .caminho-lado p { font-size: 0.85rem; font-weight: 600; }
-.caminho-opcao { text-align: left; }
+.caminho-opcao { display: block; width: 100%; min-height: 44px; text-align: left; }
 .caminho-opcoes[hidden], #caminho-resultado[hidden] { display: none; }

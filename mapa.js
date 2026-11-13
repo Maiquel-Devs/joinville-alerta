@@ -196,6 +196,13 @@
     return `${base}/rota?${q}`;
   }
 
+  // Rótulo de uma opção de rua homônima: só extensão e número de trechos (sem risco), ex.: "Rua X — 26 trechos, 3,1 km".
+  function rotuloOpcao(o) {
+    if (o?.trechos == null || o?.km == null) return o?.nome ?? o?.rotulo ?? '';
+    const n = o.trechos === 1 ? '1 trecho' : `${o.trechos} trechos`;
+    return `${o.nome} — ${n}, ${Number(o.km).toFixed(1).replace('.', ',')} km`;
+  }
+
   // Quatro números de um caminho, já formatados: total, faixa ativa, área sem faixa ativa e não avaliado.
   function resumoCaminho(desc) {
     const k = desc?.km_por_classe ?? {};
@@ -205,6 +212,17 @@
       area_sem_faixa_ativa: formatarKm(k.area_sem_faixa_ativa ?? 0),
       nao_avaliado: formatarKm(k.nao_avaliado ?? 0),
     };
+  }
+
+  const MAX_OPCOES_VISIVEIS = 5;
+
+  // Opções com rótulo; se duas ficarem com o mesmo texto (mesmo nome, trechos e km), mostra só o nome.
+  function rotularOpcoes(lista) {
+    const rotulos = lista.map(rotuloOpcao);
+    return lista.map((o, i) => ({
+      rotulo: rotulos.filter((r) => r === rotulos[i]).length > 1 ? (o.nome ?? rotulos[i]) : rotulos[i],
+      no: o.no,
+    }));
   }
 
   // Traduz a resposta do endpoint (HTTP + corpo JSON) em { tipo, ... } para a tela. Nunca devolve "ok" sem
@@ -223,7 +241,7 @@
             campo,
             titulo: campo === 'origem' ? 'Rua de origem' : 'Rua de destino',
             total: corpo[campo].total_opcoes,
-            opcoes: (corpo[campo].opcoes ?? []).map((o) => ({ rotulo: o.rotulo, no: o.no })),
+            opcoes: rotularOpcoes((corpo[campo].opcoes ?? []).slice(0, MAX_OPCOES_VISIVEIS)),
           }));
         if (!lados.length) return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
         return { tipo: 'ambiguo', lados, mensagem: TEXTOS_ROTA.escolha };
@@ -235,7 +253,7 @@
     }
   }
 
-  const api = { decidirMapa, estiloDoTrecho, estiloDestacado, estiloEsmaecido, formatarKm, casarNome, resolverIntervalo, consulta, urlRota, resumoCaminho, interpretarRota, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
+  const api = { decidirMapa, estiloDoTrecho, estiloDestacado, estiloEsmaecido, formatarKm, casarNome, resolverIntervalo, consulta, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
 
   // --- só no navegador -------------------------------------------------------------------
   if (typeof document !== 'undefined') {

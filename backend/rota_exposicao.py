@@ -29,7 +29,7 @@ TETO_PADRAO = 0.20  # desvio máximo aceito sobre o caminho mais curto
 EXPO = {FAIXA_ATIVA: 1.0, AREA_SEM_FAIXA_ATIVA: 0.5, NAO_AVALIADO: 0.0}
 RAIO_HOMONIMO_M = 500  # trechos do mesmo nome a até 500 m um do outro são a mesma rua (igual ao front)
 MIN_LETRAS = 3
-MAX_OPCOES = 10
+MAX_OPCOES = 5
 DENOMINACOES = {"rua", "av", "avenida", "servidao", "travessa", "alameda", "ponte", "rodovia", "praca", "estrada"}
 
 # --- nomes: mesma regra de mapa.js (casarNome) ---------------------------------------------------
@@ -145,7 +145,7 @@ def resolver(rede_: Rede, texto) -> dict:
     Os trechos que casam são agrupados pelo nome oficial (o primeiro nome da aresta que casou) e cada
     nome é separado em ruas distintas quando os trechos ficam a mais de 500 m um do outro. Mais de um
     grupo = ambíguo: devolve as opções, sem escolher. Cada opção tem um nó representativo (o nó do grupo
-    mais perto do centro dele), lat, lon e o rótulo com o nome oficial e o número de trechos.
+    mais perto do centro dele), lat, lon o rótulo, o número de trechos e o comprimento total (km, uma casa). No máximo MAX_OPCOES, das mais longas em trechos.
     Levanta TextoCurto se o texto tem menos de 3 letras depois de tirar a denominação.
     """
     q = consulta(texto)
@@ -162,13 +162,15 @@ def resolver(rede_: Rede, texto) -> dict:
     for oficial, arestas in por_oficial.items():
         nos = {n for aresta in arestas for n in aresta}
         for grupo in _agrupar(rede_, nos):
-            n_trechos = len({frozenset(a) for a in arestas if a[0] in grupo})  # os dois sentidos contam uma vez
+            unicas = {frozenset(a): a for a in arestas if a[0] in grupo}  # os dois sentidos contam uma vez
+            n_trechos = len(unicas)
+            km = round(sum(rede_.g[u][v]["length"] for u, v in unicas.values()) / 1000, 1)
             xs, ys = zip(*(rede_.metros(n) for n in grupo))
             cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
             rep = min(grupo, key=lambda n: math.hypot(rede_.metros(n)[0] - cx, rede_.metros(n)[1] - cy))
             d = rede_.g.nodes[rep]
             opcoes.append({"nome": oficial, "rotulo": f"{oficial} ({n_trechos} trechos)", "trechos": n_trechos,
-                           "no": rep, "lat": d["lat"], "lon": d["lon"]})
+                           "km": km, "no": rep, "lat": d["lat"], "lon": d["lon"]})
     opcoes.sort(key=lambda o: (-o["trechos"], o["nome"]))
     return {"ambiguo": len(opcoes) > 1, "total_opcoes": len(opcoes), "opcoes": opcoes[:MAX_OPCOES]}
 

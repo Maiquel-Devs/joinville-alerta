@@ -174,8 +174,24 @@ def test_nome_ambiguo_devolve_opcoes_sem_escolher():
     assert primeiro["trechos"] == 2 and segundo["trechos"] == 1  # o trecho de 300 m + 300 m é uma rua só
     assert primeiro["rotulo"] == "Rua Padre Antônio Vieira (2 trechos)"
     for o in r["opcoes"]:
-        assert set(o) == {"nome", "rotulo", "trechos", "no", "lat", "lon"}
+        assert set(o) == {"nome", "rotulo", "trechos", "km", "no", "lat", "lon"}
     assert primeiro["no"] == 6  # o nó do meio da rua com os nós 5, 6 e 7
+    assert primeiro["km"] == 0.6 and segundo["km"] == 0.3  # 2 x 300 m e 1 x 300 m, cada trecho uma vez
+
+
+def test_opcoes_ordenadas_por_trechos_e_limitadas_a_5():
+    nos, arestas = [], []
+    for i in range(7):  # 7 ruas homônimas, longe uma da outra, com i+1 trechos de 250 m cada
+        base_lat = -26.20 - i * 0.05
+        for j in range(i + 2):
+            nos.append([100 * i + j, base_lat, -48.90 + j * 0.002])
+        for j in range(i + 1):
+            u, v = 100 * i + j, 100 * i + j + 1
+            arestas += [[u, v, 250.0, [1000 * i + j], ["Rua Teste"], []], [v, u, 250.0, [1000 * i + j], ["Rua Teste"], []]]
+    r = resolver(Rede(nos, arestas), "teste")
+    assert r["ambiguo"] is True and r["total_opcoes"] == 7 and len(r["opcoes"]) == 5
+    assert [o["trechos"] for o in r["opcoes"]] == [7, 6, 5, 4, 3]
+    assert [o["km"] for o in r["opcoes"]] == [1.8, 1.5, 1.2, 1.0, 0.8]  # 1750, 1500, 1250, 1000, 750 m
 
 
 # --- estado atual ----------------------------------------------------------------------------------
