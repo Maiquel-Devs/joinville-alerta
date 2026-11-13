@@ -68,7 +68,8 @@ def get_rota(origem: str, destino: str, origem_no: int | None = None, destino_no
     "ambiguo". Sem eles, nome ambíguo devolve as opções e não calcula.
 
     Status do corpo (HTTP 200): "ok" (os dois caminhos), "ambiguo" (opções de um lado ou dos dois; não calcula),
-    "nao_encontrado" (nenhuma rua da malha casa com o texto de um dos lados; não significa ausência de risco),
+    "nao_encontrado" (nenhuma rua da malha casa com o texto de um dos lados; não significa ausência de risco;
+    cada lado traz "sugestoes": até 3 nomes oficiais parecidos, sem calcular nada),
     "indisponivel" (sem dado de maré e chuva válido) e "sem_caminho" (as ruas não se ligam na malha).
     HTTP 400: texto com menos de 3 letras ou nó inexistente; HTTP 503: grafo indisponível.
     """
@@ -94,6 +95,8 @@ def get_rota(origem: str, destino: str, origem_no: int | None = None, destino_no
     if any(lado["ambiguo"] for lado in lados.values()):
         return {"status": "ambiguo", **lados}
     if any(lado["total_opcoes"] == 0 for lado in lados.values()):
+        for campo, texto in (("origem", origem), ("destino", destino)):  # sugestões só para o lado sem resultado
+            lados[campo]["sugestoes"] = rota_exposicao.sugerir(rede, texto) if lados[campo]["total_opcoes"] == 0 else []
         return {"status": "nao_encontrado", **lados}
 
     estado = status_geral()

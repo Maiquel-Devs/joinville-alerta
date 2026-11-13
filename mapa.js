@@ -89,6 +89,10 @@
     curto: 'Digite pelo menos 3 letras em cada rua.',
     nao_encontrado: 'Não encontramos uma dessas ruas na malha mapeada. Isso não significa ausência de risco.',
     erro: 'Caminho livre indisponível agora. Tente mais tarde.',
+    sem_conexao: 'Sem conexão com o servidor. Verifique a internet e tente de novo.',
+    sem_servico: 'O servidor ainda não tem o caminho livre. Tente mais tarde.',
+    iniciando: 'O servidor está iniciando. Tente de novo em instantes.',
+    quis_dizer: 'Você quis dizer:',
     escolha: 'Há mais de uma rua com esse nome. Escolha a que você quer; o app não escolhe por você.',
     mais_opcoes: 'Há mais opções do que as listadas. Digite mais letras do nome para refinar.',
     nao_avaliado: 'Não avaliado não significa ausência de risco.',
@@ -145,10 +149,21 @@
     });
   }
 
+  // Texto acima das sugestões: o que foi digitado, entre aspas.
+  const textoSugestao = (digitado) => `Não encontramos "${String(digitado).trim()}". ${TEXTOS_ROTA.quis_dizer}`;
+
+  // Ao tocar numa sugestão, o campo daquele lado recebe o nome oficial; o outro fica como está.
+  function aplicarSugestao(campos, campo, nome) {
+    return { ...campos, [campo]: nome };
+  }
+
   // Traduz a resposta do endpoint (HTTP + corpo JSON) em { tipo, ... } para a tela. Nunca devolve "ok" sem
   // os dois caminhos, nem trata erro como ausência de risco.
   function interpretarRota(http, corpo) {
     if (http === 400) return { tipo: 'curto', mensagem: TEXTOS_ROTA.curto };
+    if (http === 0) return { tipo: 'sem_conexao', mensagem: TEXTOS_ROTA.sem_conexao }; // falha de rede
+    if (http === 404) return { tipo: 'sem_servico', mensagem: TEXTOS_ROTA.sem_servico };
+    if (http === 408 || http === 503 || http === 504) return { tipo: 'iniciando', mensagem: TEXTOS_ROTA.iniciando }; // 408 = tempo esgotado
     if (http !== 200 || !corpo || typeof corpo !== 'object') return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
     switch (corpo.status) {
       case 'ok':
@@ -168,12 +183,17 @@
       }
       case 'indisponivel': return { tipo: 'indisponivel', mensagem: TEXTOS_ROTA.indisponivel };
       case 'sem_caminho': return { tipo: 'sem_caminho', mensagem: TEXTOS_ROTA.sem_caminho };
-      case 'nao_encontrado': return { tipo: 'nao_encontrado', mensagem: TEXTOS_ROTA.nao_encontrado };
+      case 'nao_encontrado': {
+        const sugestoes = ['origem', 'destino']
+          .map((campo) => ({ campo, nomes: (corpo[campo]?.sugestoes ?? []).filter((n) => typeof n === 'string').slice(0, 3) }))
+          .filter((l) => l.nomes.length && corpo[l.campo]?.total_opcoes === 0);
+        return { tipo: 'nao_encontrado', mensagem: TEXTOS_ROTA.nao_encontrado, sugestoes };
+      }
       default: return { tipo: 'erro', mensagem: TEXTOS_ROTA.erro };
     }
   }
 
-  const api = { estiloDoTrecho, formatarKm, marcadoresInicioFim, COR_INICIO, COR_FIM, consulta, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
+  const api = { estiloDoTrecho, formatarKm, marcadoresInicioFim, COR_INICIO, COR_FIM, consulta, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, textoSugestao, aplicarSugestao, TEXTOS_ROTA, CAMINHOS, ROTULO_CLASSE, ESTILOS, LEAFLET, MAPLIBRE };
 
   // --- só no navegador -------------------------------------------------------------------
   if (typeof document !== 'undefined') {
@@ -331,6 +351,30 @@
         caixa.hidden = false;
       }
 
+      // Sugestões para nome digitado com erro: um botão por nome oficial; tocar preenche o campo e envia de novo.
+      function mostrarSugestoes(interp) {
+        const caixa = $('caminho-opcoes');
+        caixa.replaceChildren();
+        for (const lado of interp.sugestoes) {
+          const grupo = el('div', null, 'caminho-lado');
+          grupo.append(el('p', textoSugestao($(`caminho-${lado.campo}`).value)));
+          for (const nome of lado.nomes) {
+            const b = el('button', nome, 'caminho-opcao');
+            b.type = 'button';
+            b.addEventListener('click', () => {
+              const novo = aplicarSugestao({ origem: $('caminho-origem').value, destino: $('caminho-destino').value }, lado.campo, nome);
+              $('caminho-origem').value = novo.origem;
+              $('caminho-destino').value = novo.destino;
+              escolhas = { origem: null, destino: null };
+              enviarCaminho();
+            });
+            grupo.append(b);
+          }
+          caixa.append(grupo);
+        }
+        caixa.hidden = false;
+      }
+
       async function enviarCaminho() {
         const origem = $('caminho-origem').value;
         const destino = $('caminho-destino').value;
@@ -349,7 +393,7 @@
           interp = interpretarRota(res.status, corpo);
         } catch (e) {
           console.warn('[caminho] indisponível:', e);
-          interp = interpretarRota(0, null);
+          interp = interpretarRota(e?.name === 'AbortError' ? 408 : 0, null); // tempo esgotado x sem conexão
         } finally {
           clearTimeout(t);
         }
@@ -357,6 +401,10 @@
         if (interp.tipo === 'ambiguo') {
           msgCaminho(interp.mensagem);
           return mostrarOpcoes(interp);
+        }
+        if (interp.tipo === 'nao_encontrado' && interp.sugestoes.length) {
+          msgCaminho('');
+          return mostrarSugestoes(interp);
         }
         if (interp.tipo !== 'ok') return msgCaminho(interp.mensagem);
         msgCaminho('');

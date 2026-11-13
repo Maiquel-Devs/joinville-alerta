@@ -59,7 +59,7 @@ test('rótulos das classes são os da legenda do index.html', () => {
 });
 
 // --- caminho livre, textos e altitude (12/11/2026) ---------------------------------------------------
-const { marcadoresInicioFim, COR_INICIO, COR_FIM, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
+const { textoSugestao, aplicarSugestao, marcadoresInicioFim, COR_INICIO, COR_FIM, urlRota, resumoCaminho, rotuloOpcao, interpretarRota, TEXTOS_ROTA } = require('../mapa.js');
 const RUAS = require('../ruas.js');
 const PROIBIDAS = /segur|mancha|caminho até|\brota\b/i;
 const html = fs.readFileSync(path.join(__dirname, '..', 'index.html'), 'utf8');
@@ -140,7 +140,7 @@ test('interpretarRota: demais status e HTTP 400 têm o texto pedido', () => {
   assert.equal(interpretarRota(200, { status: 'sem_caminho' }).mensagem, 'Não há caminho entre essas ruas dentro da malha mapeada.');
   assert.equal(interpretarRota(400, { detail: {} }).mensagem, 'Digite pelo menos 3 letras em cada rua.');
   assert.equal(interpretarRota(200, { status: 'nao_encontrado' }).tipo, 'nao_encontrado');
-  for (const [http, corpo] of [[503, null], [0, null], [200, null], [500, {}], [200, { status: 'x' }]]) {
+  for (const [http, corpo] of [[200, null], [500, {}], [200, { status: 'x' }]]) {
     assert.equal(interpretarRota(http, corpo).tipo, 'erro', `${http}`);
   }
 });
@@ -196,4 +196,36 @@ test('marcadoresInicioFim: sem coordenadas não cria marcador; textos sem palavr
   assert.equal(marcadoresInicioFim({ origem: { lat: -26.3, lon: -48.8 } }).length, 1);
   assert.ok(textoVisivel.includes('Início e fim do caminho'));
   assert.ok(!PROIBIDAS.test('Início e fim do caminho'));
+});
+
+test('interpretarRota: mensagens distintas para rede, 404, 503/tempo esgotado e indisponível do servidor', () => {
+  assert.deepEqual(interpretarRota(0, null), { tipo: 'sem_conexao', mensagem: 'Sem conexão com o servidor. Verifique a internet e tente de novo.' });
+  assert.deepEqual(interpretarRota(404, { detail: 'Not Found' }), { tipo: 'sem_servico', mensagem: 'O servidor ainda não tem o caminho livre. Tente mais tarde.' });
+  for (const http of [503, 408]) {
+    assert.deepEqual(interpretarRota(http, null), { tipo: 'iniciando', mensagem: 'O servidor está iniciando. Tente de novo em instantes.' }, `${http}`);
+  }
+  // "indisponivel" vindo do próprio back-end mantém a mensagem de dados desatualizados
+  assert.equal(interpretarRota(200, { status: 'indisponivel' }).mensagem, 'Os dados de maré e chuva estão desatualizados. Tente mais tarde.');
+  for (const t of ['sem_conexao', 'sem_servico', 'iniciando', 'quis_dizer']) assert.ok(!PROIBIDAS.test(TEXTOS_ROTA[t]), t);
+});
+
+test('nao_encontrado: sugestões só do lado sem resultado; sem sugestões mantém a mensagem atual', () => {
+  const r = interpretarRota(200, {
+    status: 'nao_encontrado',
+    origem: { ambiguo: false, total_opcoes: 0, opcoes: [], sugestoes: ['Rua Horto Florestal'] },
+    destino: { ambiguo: false, total_opcoes: 1, opcoes: [{ no: 1 }], sugestoes: [] },
+  });
+  assert.equal(r.tipo, 'nao_encontrado');
+  assert.deepEqual(r.sugestoes, [{ campo: 'origem', nomes: ['Rua Horto Florestal'] }]);
+  const sem = interpretarRota(200, { status: 'nao_encontrado', origem: { total_opcoes: 0, opcoes: [], sugestoes: [] }, destino: { total_opcoes: 1 } });
+  assert.deepEqual(sem.sugestoes, []);
+  assert.equal(sem.mensagem, TEXTOS_ROTA.nao_encontrado);
+  assert.equal(textoSugestao(' Horto Floresta '), 'Não encontramos "Horto Floresta". Você quis dizer:');
+  assert.ok(!PROIBIDAS.test(textoSugestao('x')));
+});
+
+test('aplicarSugestao: preenche só o campo do lado e o envio usa o nome oficial', () => {
+  const novo = aplicarSugestao({ origem: 'Horto Floresta', destino: 'Príncipe' }, 'origem', 'Rua Horto Florestal');
+  assert.deepEqual(novo, { origem: 'Rua Horto Florestal', destino: 'Príncipe' });
+  assert.match(urlRota('/api', novo.origem, novo.destino, null, null), /origem=Rua\+Horto\+Florestal&destino=Pr%C3%ADncipe/);
 });

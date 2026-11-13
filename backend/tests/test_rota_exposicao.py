@@ -280,6 +280,7 @@ def test_endpoint_nao_encontrado_nao_calcula(monkeypatch):
             corpo = r.json()
             assert corpo["status"] == "nao_encontrado"
             assert corpo[lado_vazio]["total_opcoes"] == 0 and corpo[lado_vazio]["opcoes"] == []
+            assert corpo[lado_vazio]["sugestoes"] == []  # nada parecido na malha de teste
             assert "caminho_curto" not in corpo and "caminho_exposicao" not in corpo
 
 
@@ -328,3 +329,29 @@ def test_vizinho_com_o_mesmo_nome_do_grupo_nao_conta():
     arestas = par(1, 2, ["Rua Alfa"], 1) + par(2, 3, ["Rua Alfa"], 2) + par(3, 4, ["Rua Delta", "Rua Alfa"], 3)
     o = resolver(Rede(nos, arestas), "alfa")["opcoes"][0]
     assert o["cruza_inicio"] is None and o["cruza_fim"] is None  # a aresta que também se chama Alfa é da própria rua
+
+
+def _vias_horto():
+    nos = [[1, -26.30, -48.85], [2, -26.30, -48.846], [3, -26.31, -48.85], [4, -26.31, -48.846]]
+    arestas = []
+    for u, v, nome, osmid in ((1, 2, "Rua Horto Florestal", 1), (3, 4, "Rua do Príncipe", 2)):
+        arestas += [[u, v, 300.0, [osmid], [nome], []], [v, u, 300.0, [osmid], [nome], []]]
+    return Rede(nos, arestas)
+
+
+def test_sugerir_nome_parecido_e_lista_vazia_sem_parecido():
+    rede_ = _vias_horto()
+    assert "Rua Horto Florestal" in rx.sugerir(rede_, "Horto Floresta")
+    assert rx.sugerir(rede_, "Rua Horto Florestl")[0] == "Rua Horto Florestal"
+    assert rx.sugerir(rede_, "zzzxqwy") == []
+    assert len(rx.sugerir(rede_, "principe")) <= 3
+
+
+def test_endpoint_nao_encontrado_traz_sugestoes(monkeypatch):
+    with _cliente(monkeypatch, _vias_horto()) as c:
+        monkeypatch.setattr(cache_store, "_ultimo", _status(mare_1_6=True))
+        corpo = c.get("/api/v1/rota", params={"origem": "Horto Florestl", "destino": "principe"}).json()
+        assert corpo["status"] == "nao_encontrado"
+        assert corpo["origem"]["sugestoes"] == ["Rua Horto Florestal"]
+        assert corpo["destino"]["sugestoes"] == []  # este lado foi encontrado
+        assert "caminho_curto" not in corpo

@@ -5,6 +5,7 @@
 # caminhos (o mais curto e o de menor exposição) para o front comparar.
 # Usa networkx e o grafo reduzido data/grafo_reduzido.json.gz (gerado por scripts/gerar_grafo_reduzido.py).
 # Sem osmnx aqui: custo zero no Render. Nenhum texto para o usuário é gerado neste módulo.
+import difflib
 import gzip
 import json
 import math
@@ -30,6 +31,8 @@ EXPO = {FAIXA_ATIVA: 1.0, AREA_SEM_FAIXA_ATIVA: 0.5, NAO_AVALIADO: 0.0}
 RAIO_HOMONIMO_M = 500  # trechos do mesmo nome a até 500 m um do outro são a mesma rua (igual ao front)
 MIN_LETRAS = 3
 MAX_OPCOES = 5
+MAX_SUGESTOES = 3
+CORTE_SUGESTAO = 0.6
 DENOMINACOES = {"rua", "av", "avenida", "servidao", "travessa", "alameda", "ponte", "rodovia", "praca", "estrada"}
 
 # --- nomes: mesma regra de mapa.js (casarNome) ---------------------------------------------------
@@ -197,6 +200,21 @@ def resolver(rede_: Rede, texto) -> dict:
                            "cruza_fim": _cruza(rede_, fim, oficial), "no": rep, "lat": d["lat"], "lon": d["lon"]})
     opcoes.sort(key=lambda o: (-o["trechos"], o["nome"]))
     return {"ambiguo": len(opcoes) > 1, "total_opcoes": len(opcoes), "opcoes": opcoes[:MAX_OPCOES]}
+
+
+def sugerir(rede_: Rede, texto) -> list[str]:
+    """Até 3 nomes oficiais parecidos com o texto (difflib), para quando nada casa. Não calcula nada."""
+    q = consulta(texto)
+    if q is None:
+        return []
+    chaves: dict[str, str] = {}  # nome sem a denominação inicial, normalizado -> nome oficial
+    for nome in rede_.por_nome:
+        palavras = normalizar(nome).split()
+        if palavras and palavras[0] in DENOMINACOES:
+            palavras = palavras[1:]
+        chaves.setdefault(" ".join(palavras), nome)
+    achadas = difflib.get_close_matches(q, list(chaves), n=MAX_SUGESTOES, cutoff=CORTE_SUGESTAO)
+    return [chaves[c] for c in achadas]
 
 
 # --- estado atual -----------------------------------------------------------------------------------
