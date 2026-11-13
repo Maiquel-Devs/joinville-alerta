@@ -305,19 +305,26 @@ test('interpretarRota: ambíguo lista só os lados ambíguos, com rótulo e nó,
   assert.equal(r.tipo, 'ambiguo');
   assert.equal(r.lados.length, 1);
   assert.equal(r.lados[0].campo, 'destino');
-  assert.deepEqual(r.lados[0].opcoes, [{ rotulo: 'Rua Aubé — 3 trechos, 0,9 km', no: 10 }, { rotulo: 'Rua Aubé — 1 trecho, 0,3 km', no: 11 }]);
+  assert.deepEqual(r.lados[0].opcoes, [{ rotulo: 'Rua Aubé, 3 trechos, 0,9 km', no: 10 }, { rotulo: 'Rua Aubé, 1 trecho, 0,3 km', no: 11 }]);
 });
 
-test('rotuloOpcao: "26 trechos, 3,1 km", sem risco e sem palavras vetadas', () => {
-  assert.equal(rotuloOpcao({ nome: 'Avenida Santos Dumont', trechos: 26, km: 3.1, no: 1 }), 'Avenida Santos Dumont — 26 trechos, 3,1 km');
-  assert.equal(rotuloOpcao({ nome: 'Rua A', trechos: 2, km: 3, no: 1 }), 'Rua A — 2 trechos, 3,0 km');
-  assert.ok(!PROIBIDAS.test(rotuloOpcao({ nome: 'Rua A', trechos: 2, km: 3, no: 1 })));
+test('rotuloOpcao: duas linhas com a rua que cruza, singular e fim de via; sem palavras vetadas', () => {
+  const base = { nome: 'Avenida Santos Dumont', trechos: 26, km: 3.6, no: 1 };
+  assert.equal(rotuloOpcao(base), 'Avenida Santos Dumont, 26 trechos, 3,6 km'); // sem cruzamento: uma linha só
+  assert.equal(rotuloOpcao({ ...base, cruza_inicio: 'Rua X', cruza_fim: 'Rua Y' }), 'Avenida Santos Dumont, 26 trechos, 3,6 km\nentre Rua X e Rua Y');
+  assert.equal(rotuloOpcao({ nome: 'Rua A', trechos: 1, km: 3, no: 1, cruza_inicio: 'Rua X', cruza_fim: null }), 'Rua A, 1 trecho, 3,0 km\nde Rua X até o fim da via');
+  assert.equal(rotuloOpcao({ nome: 'Rua A', trechos: 2, km: 3, no: 1, cruza_inicio: null, cruza_fim: 'Rua Y' }), 'Rua A, 2 trechos, 3,0 km\ndo fim da via até Rua Y');
+  assert.equal(rotuloOpcao({ nome: 'Rua A', trechos: 2, km: 3, no: 1, cruza_inicio: null, cruza_fim: null }), 'Rua A, 2 trechos, 3,0 km');
+  for (const o of [base, { ...base, cruza_inicio: 'Rua X', cruza_fim: null }]) assert.ok(!PROIBIDAS.test(rotuloOpcao(o)));
 });
 
-test('interpretarRota: opções iguais em nome, trechos e km ficam só com o nome; no máximo 5 visíveis', () => {
-  const o = (no) => ({ nome: 'Rua B', trechos: 2, km: 0.5, no });
-  const r = interpretarRota(200, { status: 'ambiguo', origem: lado(true, [o(1), o(2)]), destino: lado(false) });
-  assert.deepEqual(r.lados[0].opcoes.map((x) => x.rotulo), ['Rua B', 'Rua B']);
+test('interpretarRota: textos iguais ganham a posição ("1ª opção"); no máximo 5 visíveis', () => {
+  const o = (no, extra = {}) => ({ nome: 'Rua B', trechos: 2, km: 0.5, cruza_inicio: 'Rua X', cruza_fim: 'Rua Y', no, ...extra });
+  const r = interpretarRota(200, { status: 'ambiguo', origem: lado(true, [o(1), o(2), o(3, { km: 0.9 })]), destino: lado(false) });
+  const t = r.lados[0].opcoes.map((x) => x.rotulo);
+  assert.ok(t[0].endsWith('\n1ª opção') && t[1].endsWith('\n2ª opção'));
+  assert.ok(!t[2].includes('ª opção')); // este é diferente das outras
+  assert.equal(new Set(t).size, 3);
   const sete = Array.from({ length: 7 }, (_, i) => ({ nome: 'Rua C', trechos: 9 - i, km: 1, no: i }));
   const r2 = interpretarRota(200, { status: 'ambiguo', origem: { ambiguo: true, total_opcoes: 7, opcoes: sete }, destino: lado(false) });
   assert.equal(r2.lados[0].opcoes.length, 5);

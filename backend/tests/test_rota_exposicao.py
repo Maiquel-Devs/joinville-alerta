@@ -174,7 +174,7 @@ def test_nome_ambiguo_devolve_opcoes_sem_escolher():
     assert primeiro["trechos"] == 2 and segundo["trechos"] == 1  # o trecho de 300 m + 300 m é uma rua só
     assert primeiro["rotulo"] == "Rua Padre Antônio Vieira (2 trechos)"
     for o in r["opcoes"]:
-        assert set(o) == {"nome", "rotulo", "trechos", "km", "no", "lat", "lon"}
+        assert set(o) == {"nome", "rotulo", "trechos", "km", "cruza_inicio", "cruza_fim", "no", "lat", "lon"}
     assert primeiro["no"] == 6  # o nó do meio da rua com os nós 5, 6 e 7
     assert primeiro["km"] == 0.6 and segundo["km"] == 0.3  # 2 x 300 m e 1 x 300 m, cada trecho uma vez
 
@@ -298,3 +298,33 @@ def test_endpoint_escolha_do_no_e_sem_caminho(monkeypatch):
         assert r.status_code == 200 and r.json()["status"] == "sem_caminho"
         r = c.get("/api/v1/rota", params={"origem": "Rua Curta", "destino": "Rua Curta", "origem_no": 1, "destino_no": 999})
         assert r.status_code == 400 and r.json()["detail"]["motivo"] == "no_inexistente"
+
+
+def test_rua_que_cruza_em_cada_ponta():
+    # Rua Alfa: 1-2-3 (leste-oeste). Na ponta 1 cruzam Rua Beta (2 arestas) e Rua Gama (1); na ponta 3, só uma
+    # aresta sem nome e uma da própria rua com outro nome também listado (não conta); fim de via -> None.
+    nos = [[1, -26.30, -48.850], [2, -26.30, -48.848], [3, -26.30, -48.846],
+           [10, -26.29, -48.850], [11, -26.31, -48.850], [12, -26.30, -48.852],
+           [13, -26.30, -48.844]]
+
+    def par(u, v, nomes, osmid):
+        return [[u, v, 200.0, [osmid], nomes, []], [v, u, 200.0, [osmid], nomes, []]]
+
+    arestas = (par(1, 2, ["Rua Alfa"], 1) + par(2, 3, ["Rua Alfa"], 2)
+               + par(1, 10, ["Rua Beta"], 3) + par(1, 11, ["Rua Beta"], 4) + par(1, 12, ["Rua Gama"], 5)
+               + par(3, 13, [], 6))
+    r = resolver(Rede(nos, arestas), "alfa")
+    assert r["ambiguo"] is False
+    o = r["opcoes"][0]
+    assert {o["cruza_inicio"], o["cruza_fim"]} == {"Rua Beta", None}  # a ponta 3 só tem aresta sem nome
+
+
+def test_vizinho_com_o_mesmo_nome_do_grupo_nao_conta():
+    nos = [[1, -26.30, -48.850], [2, -26.30, -48.848], [3, -26.30, -48.846], [4, -26.29, -48.846]]
+
+    def par(u, v, nomes, osmid):
+        return [[u, v, 200.0, [osmid], nomes, []], [v, u, 200.0, [osmid], nomes, []]]
+
+    arestas = par(1, 2, ["Rua Alfa"], 1) + par(2, 3, ["Rua Alfa"], 2) + par(3, 4, ["Rua Delta", "Rua Alfa"], 3)
+    o = resolver(Rede(nos, arestas), "alfa")["opcoes"][0]
+    assert o["cruza_inicio"] is None and o["cruza_fim"] is None  # a aresta que também se chama Alfa é da própria rua

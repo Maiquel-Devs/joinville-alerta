@@ -196,11 +196,18 @@
     return `${base}/rota?${q}`;
   }
 
-  // Rótulo de uma opção de rua homônima: só extensão e número de trechos (sem risco), ex.: "Rua X — 26 trechos, 3,1 km".
+  // Rótulo de uma opção de rua homônima, em até duas linhas, sem risco:
+  // "Rua X, 26 trechos, 3,6 km" e, se houver, "entre Rua Y e Rua Z" (ponta sem vizinha: "de Rua Y até o fim da via").
   function rotuloOpcao(o) {
     if (o?.trechos == null || o?.km == null) return o?.nome ?? o?.rotulo ?? '';
     const n = o.trechos === 1 ? '1 trecho' : `${o.trechos} trechos`;
-    return `${o.nome} — ${n}, ${Number(o.km).toFixed(1).replace('.', ',')} km`;
+    const linhas = [`${o.nome}, ${n}, ${Number(o.km).toFixed(1).replace('.', ',')} km`];
+    const ini = o.cruza_inicio ?? null;
+    const fim = o.cruza_fim ?? null;
+    if (ini && fim) linhas.push(`entre ${ini} e ${fim}`);
+    else if (ini) linhas.push(`de ${ini} até o fim da via`);
+    else if (fim) linhas.push(`do fim da via até ${fim}`);
+    return linhas.join('\n');
   }
 
   // Quatro números de um caminho, já formatados: total, faixa ativa, área sem faixa ativa e não avaliado.
@@ -216,13 +223,15 @@
 
   const MAX_OPCOES_VISIVEIS = 5;
 
-  // Opções com rótulo; se duas ficarem com o mesmo texto (mesmo nome, trechos e km), mostra só o nome.
+  // Opções com rótulo; se duas ficarem com o texto completo igual, a posição entre as iguais entra como última linha.
   function rotularOpcoes(lista) {
     const rotulos = lista.map(rotuloOpcao);
-    return lista.map((o, i) => ({
-      rotulo: rotulos.filter((r) => r === rotulos[i]).length > 1 ? (o.nome ?? rotulos[i]) : rotulos[i],
-      no: o.no,
-    }));
+    const visto = {};
+    return lista.map((o, i) => {
+      const iguais = rotulos.filter((r) => r === rotulos[i]).length;
+      visto[rotulos[i]] = (visto[rotulos[i]] ?? 0) + 1;
+      return { rotulo: iguais > 1 ? `${rotulos[i]}\n${visto[rotulos[i]]}ª opção` : rotulos[i], no: o.no };
+    });
   }
 
   // Traduz a resposta do endpoint (HTTP + corpo JSON) em { tipo, ... } para a tela. Nunca devolve "ok" sem

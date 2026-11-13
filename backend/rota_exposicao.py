@@ -139,13 +139,35 @@ def _agrupar(rede_: Rede, nos) -> list[set]:
     return list(grupos.values())
 
 
+def _pontas(rede_: Rede, grupo) -> tuple:
+    """As duas pontas do grupo: o nó mais longe do centro e o nó mais longe desse (aproxima o diâmetro)."""
+    pos = {n: rede_.metros(n) for n in grupo}
+    cx = sum(x for x, _ in pos.values()) / len(pos)
+    cy = sum(y for _, y in pos.values()) / len(pos)
+    a = max(grupo, key=lambda n: (math.hypot(pos[n][0] - cx, pos[n][1] - cy), n))
+    b = max(grupo, key=lambda n: (math.hypot(pos[n][0] - pos[a][0], pos[n][1] - pos[a][1]), n))
+    return a, b
+
+
+def _cruza(rede_: Rede, no, oficial: str) -> str | None:
+    """Nome mais frequente entre as arestas do nó que não são da própria rua; sem nome ou sem vizinha: None.
+    Empate: ordem alfabética. Aresta sem nome não conta."""
+    cont: dict[str, int] = {}
+    vizinhas = [rede_.g[no][v] for v in rede_.g.successors(no)] + [rede_.g[u][no] for u in rede_.g.predecessors(no)]
+    for d in vizinhas:
+        if d["nomes"] and oficial not in d["nomes"]:
+            cont[d["nomes"][0]] = cont.get(d["nomes"][0], 0) + 1
+    return min(cont, key=lambda n: (-cont[n], n)) if cont else None
+
+
 def resolver(rede_: Rede, texto) -> dict:
     """Candidatos para o texto: {"ambiguo": bool, "total_opcoes": n, "opcoes": [...]}.
 
     Os trechos que casam são agrupados pelo nome oficial (o primeiro nome da aresta que casou) e cada
     nome é separado em ruas distintas quando os trechos ficam a mais de 500 m um do outro. Mais de um
     grupo = ambíguo: devolve as opções, sem escolher. Cada opção tem um nó representativo (o nó do grupo
-    mais perto do centro dele), lat, lon o rótulo, o número de trechos e o comprimento total (km, uma casa). No máximo MAX_OPCOES, das mais longas em trechos.
+    mais perto do centro dele), lat, lon o rótulo, o número de trechos, o comprimento total (km, uma casa) e a rua que cruza em cada ponta
+    (cruza_inicio, cruza_fim; None no fim de via). No máximo MAX_OPCOES, das mais longas em trechos.
     Levanta TextoCurto se o texto tem menos de 3 letras depois de tirar a denominação.
     """
     q = consulta(texto)
@@ -169,8 +191,10 @@ def resolver(rede_: Rede, texto) -> dict:
             cx, cy = sum(xs) / len(xs), sum(ys) / len(ys)
             rep = min(grupo, key=lambda n: math.hypot(rede_.metros(n)[0] - cx, rede_.metros(n)[1] - cy))
             d = rede_.g.nodes[rep]
+            ini, fim = _pontas(rede_, grupo)
             opcoes.append({"nome": oficial, "rotulo": f"{oficial} ({n_trechos} trechos)", "trechos": n_trechos,
-                           "km": km, "no": rep, "lat": d["lat"], "lon": d["lon"]})
+                           "km": km, "cruza_inicio": _cruza(rede_, ini, oficial),
+                           "cruza_fim": _cruza(rede_, fim, oficial), "no": rep, "lat": d["lat"], "lon": d["lon"]})
     opcoes.sort(key=lambda o: (-o["trechos"], o["nome"]))
     return {"ambiguo": len(opcoes) > 1, "total_opcoes": len(opcoes), "opcoes": opcoes[:MAX_OPCOES]}
 
